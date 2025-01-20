@@ -335,10 +335,10 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   public async createVcRegistry(
     registryName: string = VLEI_REGISTRY_NAME,
   ): Promise<void> {
-    const issuerAid = await this.client.identifiers().get(AID_NAME);
+    const holderAid = await this.client.identifiers().get(AID_NAME);
     const registryCreationResult = await this.client
       .registries()
-      .create({ name: issuerAid.name, registryName });
+      .create({ name: holderAid.name, registryName });
 
     await this.client.operations().wait(registryCreationResult.op);
     await this.client.operations().delete(registryCreationResult.op.name);

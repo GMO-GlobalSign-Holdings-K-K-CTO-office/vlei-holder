@@ -88,8 +88,8 @@ export class AcdcIssuer implements OobiIpexHandler {
   async progress(client: signify.SignifyClient, holder: Contact) {
     console.log("AcdcIssuer started.");
 
-    const issuerAid = await client.identifiers().get(AID_NAME);
-    const registries = await client.registries().list(issuerAid.name);
+    const holderAid = await client.identifiers().get(AID_NAME);
+    const registries = await client.registries().list(holderAid.name);
 
     type Registry = {
       name: string;
@@ -106,7 +106,7 @@ export class AcdcIssuer implements OobiIpexHandler {
     // Note: MVPではQVI vLEI CredentialとChainさせて発行する。以下を参考にする。
     // In the MVP, it will be issued with chaining the QVI vLEI Credential. Refer to the following for reference.
     //   https://github.com/WebOfTrust/signify-ts/blob/main/examples/integration-scripts/credentials.test.ts#L498
-    const issueResult = await client.credentials().issue(issuerAid.name, {
+    const issueResult = await client.credentials().issue(holderAid.name, {
       ri: registry.regk,
       s: QVI_SCHEMA_SAID,
       a: {
@@ -127,7 +127,7 @@ export class AcdcIssuer implements OobiIpexHandler {
     const credential = await client.credentials().get(issueResult.acdc.ked.d);
 
     const [grant, gsigs, gend] = await client.ipex().grant({
-      senderName: issuerAid.name,
+      senderName: holderAid.name,
       acdc: new signify.Serder(credential.sad),
       anc: new signify.Serder(credential.anc),
       iss: new signify.Serder(credential.iss),
@@ -138,7 +138,7 @@ export class AcdcIssuer implements OobiIpexHandler {
 
     const grantOp = await client
       .ipex()
-      .submitGrant(issuerAid.name, grant, gsigs, gend, [holder.pre]);
+      .submitGrant(holderAid.name, grant, gsigs, gend, [holder.pre]);
 
     client.operations().wait(grantOp);
     client.operations().delete(grantOp.name);

@@ -7,7 +7,7 @@
         class="text-white align-end"
         gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
       >
-        <v-card-title>ACDC Issuer</v-card-title>
+        <v-card-title>ACDC Holder</v-card-title>
       </v-img>
       <v-form ref="form">
         <v-text-field

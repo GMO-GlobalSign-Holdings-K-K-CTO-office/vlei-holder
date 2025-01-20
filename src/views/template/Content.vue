@@ -27,7 +27,7 @@
     <!-- Menu(Left Side) -->
     <v-navigation-drawer v-model="navDrawn" app temporary>
       <v-list-item class="my-3">
-        <v-list-item-title class="text-h6">ACDC Issuer</v-list-item-title>
+        <v-list-item-title class="text-h6">ACDC Holder</v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
 
