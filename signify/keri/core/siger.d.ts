@@ -1,0 +1,25 @@
+import { Indexer, IndexerArgs } from "./indexer";
+import { Verfer } from "./verfer";
+/**
+   Siger is subclass of Indexer, indexed signature material,
+    Adds .verfer property which is instance of Verfer that provides
+          associated signature verifier.
+
+    See Indexer for inherited attributes and properties:
+
+    Attributes:
+
+    Properties:
+        .verfer is Verfer object instance
+
+    Methods:
+ **/
+export declare class Siger extends Indexer {
+  private _verfer?;
+  constructor(
+    { raw, code, index, ondex, qb64, qb64b, qb2 }: IndexerArgs,
+    verfer?: Verfer,
+  );
+  get verfer(): Verfer | undefined;
+  set verfer(verfer: Verfer | undefined);
+}
