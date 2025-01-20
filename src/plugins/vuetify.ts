@@ -32,7 +32,7 @@ export const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: `${import.meta.env.VITE_VUETIFY_THEME ?? "lightTheme"}`,
+    defaultTheme: `${import.meta.env.VITE_VUETIFY_THEME ?? "darkTheme"}`,
     variations: {
       colors: ["primary", "secondary", "accent"],
       lighten: 2,
