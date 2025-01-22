@@ -84,71 +84,28 @@ export class MyResponseSender implements OobiIpexHandler {
 }
 
 // IPEX Part
-export class AcdcIssuer implements OobiIpexHandler {
+export class IssuerAdmitter implements OobiIpexHandler {
   async progress(client: signify.SignifyClient, holder: Contact) {
-    console.log("AcdcIssuer started.");
+    // const holderNotifications = await waitForNotifications(
+    //   holderClient,
+    //   "/exn/ipex/grant",
+    // );
+    // const grantNotification = holderNotifications[0]; // should only have one notification right now
 
-    const holderAid = await client.identifiers().get(AID_NAME);
-    const registries = await client.registries().list(holderAid.name);
+    // const [admit, sigs, aend] = await holderClient.ipex().admit({
+    //   senderName: holderAid.name,
+    //   message: "",
+    //   grantSaid: grantNotification.a.d!,
+    //   recipient: issuerAid.prefix,
+    //   datetime: createTimestamp(),
+    // });
+    // const op = await holderClient
+    //   .ipex()
+    //   .submitAdmit(holderAid.name, admit, sigs, aend, [issuerAid.prefix]);
+    // await waitOperation(holderClient, op);
 
-    type Registry = {
-      name: string;
-      regk: string;
-    };
-    const registry: Registry = registries[0];
+    // await markAndRemoveNotification(holderClient, grantNotification);
 
-    // Note: I want to make it more versatile, but for now, I'll keep it fixed.
-    // もっと汎用的な作りにしたいが、とりあえずQVI vLEIに固定的にする。
-    const vcdata = {
-      LEI: holder.name,
-    };
-
-    // Note: MVPではQVI vLEI CredentialとChainさせて発行する。以下を参考にする。
-    // In the MVP, it will be issued with chaining the QVI vLEI Credential. Refer to the following for reference.
-    //   https://github.com/WebOfTrust/signify-ts/blob/main/examples/integration-scripts/credentials.test.ts#L498
-    const issueResult = await client.credentials().issue(holderAid.name, {
-      ri: registry.regk,
-      s: QVI_SCHEMA_SAID,
-      a: {
-        i: holder.pre,
-        ...vcdata,
-      },
-    });
-    console.log(`IssResult: ${JSON.stringify(issueResult, null, 2)}`);
-
-    const issueOp = issueResult.op;
-    client.operations().wait(issueOp);
-    client.operations().delete(issueOp.name);
-
-    //--------------------------
-
-    // issueResultとCredentialの型が異なるので、一度Credentialをretrieveする。
-    // Since the types of issueResult and Credential are different, Credential will be retrieved once.
-    const credential = await client.credentials().get(issueResult.acdc.ked.d);
-
-    const [grant, gsigs, gend] = await client.ipex().grant({
-      senderName: holderAid.name,
-      acdc: new signify.Serder(credential.sad),
-      anc: new signify.Serder(credential.anc),
-      iss: new signify.Serder(credential.iss),
-      ancAttachment: credential.ancAttachment,
-      recipient: holder.pre,
-      datetime: new Date().toISOString().replace("Z", "000+00:00"),
-    });
-
-    const grantOp = await client
-      .ipex()
-      .submitGrant(holderAid.name, grant, gsigs, gend, [holder.pre]);
-
-    client.operations().wait(grantOp);
-    client.operations().delete(grantOp.name);
-
-    console.log("AcdcIssuer finished.");
-  }
-}
-
-export class AdmitMarker implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, holder: Contact) {
     console.log("AdmitMarker started.");
 
     if (!holder.notification) {
