@@ -418,16 +418,20 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     // TODO: Important!! ここでStatusの設定を行う。(1)
 
     // TODO: **Notification**の取得
-    // (1)-a.Challengeの取得を行う。
+    // (1)-a.Your Challengeの取得を行う。
     //    Statusの設定の中で、Challenge受信のNotification情報を取得して、存在すればStatusに2_1_challenge_receivedを設定する。
-    //    Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。
+    //    Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Responseの送信へ)
     // 参考: github.com/WebOfTrust/signify-ts/blob/cddb00713ce7b09b3f18acdaae559703759369bc/examples/integration-scripts/utils/test-util.ts#L479
 
-    // (1)-b. ResponseのValdiate状態を取得する。
+    // (1)-b. My ResponseのValdiate状態を取得する。
     //     Statusの設定の中で、ResponseのNotification情報を取得して、存在すればStatusに2_3_response_validatedを設定する。
-    //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。
+    //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Challengeの送信へ)
 
-    // (1)-c. Credentialの取得を行う。
+    // (1)-c. Your Responseの取得を行う。
+    //     Statusの設定の中で、ResponseのNotification情報を取得して、存在すればStatusにresponse_receivedを設定する。
+    //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Validateへ)
+
+    // (1)-d. Credentialの取得を行う。
     //   Statusの設定の中で、CredentialのNotification情報を取得して、存在すればStatusに4_1_credential_receivedを設定する。
     //   その続きの諸路として、ContactをprogressIpex(..)に渡す。
     // 下記は、参考コード
