@@ -1,10 +1,10 @@
 import * as signify from "signify/signify-ts.mjs";
 import { Contact } from "@/modules/repository";
 import { IllegalStateException } from "@/modules/exception";
-import { AID_NAME, QVI_SCHEMA_SAID } from "@/modules/const";
+import { AidName } from "./const";
 
 export interface OobiIpexHandler {
-  progress(client: signify.SignifyClient, holder: Contact): Promise<void>;
+  progress(client: signify.SignifyClient, issuer: Contact): Promise<void>;
 }
 
 // Note: 現状、各Handlerの最後に状態を遷移させてはいない。
@@ -12,7 +12,7 @@ export interface OobiIpexHandler {
 
 // OOBI Part
 export class MyChallengeSender implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, holder: Contact) {
+  async progress(client: signify.SignifyClient, issuer: Contact) {
     console.log("ChallengeSender started.");
 
     // チャレンジ送信専用のメソッドがclientにない。
@@ -21,7 +21,7 @@ export class MyChallengeSender implements OobiIpexHandler {
     const sender = await client.identifiers().get("aid");
     const challengeSmall = await client.challenges().generate(128);
     sessionStorage.setItem(
-      `challenge-${holder.pre}`,
+      `challenge-${issuer.pre}`,
       JSON.stringify(challengeSmall),
     );
 
@@ -34,7 +34,7 @@ export class MyChallengeSender implements OobiIpexHandler {
         "/challenge",
         { words: challengeSmall.words },
         {},
-        [holder.pre],
+        [issuer.pre],
       );
     console.log(`Challenge Sent: ${JSON.stringify(resp, null, 2)}`);
     console.log("ChallengeSender finished.");
@@ -42,17 +42,17 @@ export class MyChallengeSender implements OobiIpexHandler {
 }
 
 export class YourResponseValidator implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, holder: Contact) {
+  async progress(client: signify.SignifyClient, issuer: Contact) {
     console.log("ChallengeResponseValidator started.");
 
-    const challengeWord = sessionStorage.getItem(`challenge-${holder.pre}`);
+    const challengeWord = sessionStorage.getItem(`challenge-${issuer.pre}`);
     if (!challengeWord) {
       throw new Error("Challenge not found.");
     }
 
     const verifyOperation = await client
       .challenges()
-      .verify(holder.pre, JSON.parse(challengeWord).words);
+      .verify(issuer.pre, JSON.parse(challengeWord).words);
     console.log(`VerifyOperation: ${JSON.stringify(verifyOperation, null, 2)}`);
 
     await client.operations().wait(verifyOperation);
@@ -65,7 +65,7 @@ export class YourResponseValidator implements OobiIpexHandler {
     const verifyResponse = verifyOperation.response as VerifyResponse;
     const serder = new signify.Serder(verifyResponse.exn);
 
-    const resp = await client.challenges().responded(holder.pre, serder.ked.d);
+    const resp = await client.challenges().responded(issuer.pre, serder.ked.d);
 
     console.log(`Responsed Resp: ${JSON.stringify(resp, null, 2)}`);
     console.log("ChallengeResponseValidator finished.");
@@ -73,12 +73,12 @@ export class YourResponseValidator implements OobiIpexHandler {
 }
 
 export class MyResponseSender implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, holder: Contact) {
+  async progress(client: signify.SignifyClient, issuer: Contact) {
     console.log("ResponseSender started.");
 
     const response = await client
       .challenges()
-      .respond("aid", holder.pre, holder.challenge);
+      .respond("aid", issuer.pre, issuer.challenge);
     console.log(`Response Sent: ${JSON.stringify(response, null, 2)}`);
 
     console.log("ResponseSender finished.");
@@ -87,35 +87,32 @@ export class MyResponseSender implements OobiIpexHandler {
 
 // IPEX Part
 export class CredentialAccepter implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, holder: Contact) {
+  async progress(client: signify.SignifyClient, issuer: Contact) {
     console.log("IssuerAdmitter started.");
-    // const holderNotifications = await waitForNotifications(
-    //   holderClient,
-    //   "/exn/ipex/grant",
-    // );
-    // const grantNotification = holderNotifications[0]; // should only have one notification right now
 
-    // const [admit, sigs, aend] = await holderClient.ipex().admit({
-    //   senderName: holderAid.name,
-    //   message: "",
-    //   grantSaid: grantNotification.a.d!,
-    //   recipient: issuerAid.prefix,
-    //   datetime: createTimestamp(),
-    // });
-    // const op = await holderClient
-    //   .ipex()
-    //   .submitAdmit(holderAid.name, admit, sigs, aend, [issuerAid.prefix]);
-    // await waitOperation(holderClient, op);
-
-    // await markAndRemoveNotification(holderClient, grantNotification);
-
-    // TODO: 大枠はこれでいい。
-    if (!holder.notification) {
+    if (!issuer.notification) {
       throw new IllegalStateException("Notification not found.");
     }
 
-    await client.notifications().mark(holder.notification.i);
-    await client.notifications().delete(holder.notification.i);
+    const aid: AidName = "aid";
+    const holder = await client.identifiers().get(aid);
+    const [admitSerder, sigs, aend] = await client
+      .ipex()
+      .admit(
+        holder.name,
+        "",
+        issuer.notification.a.d!,
+        new Date().toISOString().replace("Z", "000+00:00"),
+      );
+
+    const admitOperation = await client
+      .ipex()
+      .submitAdmit(holder.name, admitSerder, sigs, aend, [issuer.pre]);
+
+    await client.operations().wait(admitOperation);
+    await client.operations().delete(admitOperation.name);
+    await client.notifications().mark(issuer.notification.i);
+    await client.notifications().delete(issuer.notification.i);
 
     console.log("IssuerAdmitter finished.");
   }

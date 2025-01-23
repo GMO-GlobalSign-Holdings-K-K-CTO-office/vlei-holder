@@ -430,6 +430,13 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     // (1)-c. Credentialの取得を行う。
     //   Statusの設定の中で、CredentialのNotification情報を取得して、存在すればStatusに4_1_credential_receivedを設定する。
     //   その続きの諸路として、ContactをprogressIpex(..)に渡す。
+    // 下記は、参考コード
+
+    // const holderNotifications = await waitForNotifications(
+    //   holderClient,
+    //   "/exn/ipex/grant",
+    // );
+    // const grantNotification = holderNotifications[0]; // should only have one notification right now
 
     return [
       {
