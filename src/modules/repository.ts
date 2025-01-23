@@ -7,10 +7,9 @@ import {
   OobiIpexHandler,
   YourResponseValidator,
   MyResponseSender,
-  AcdcIssuer,
   MyChallengeSender,
   OobiIpexState,
-  AdmitMarker,
+  CredentialAccepter,
 } from "@/modules/oobi-ipex";
 import {
   type KeriaRole,
@@ -77,22 +76,24 @@ export class Signifies {
             import.meta.env.VITE_KERIA_BOOT_INTERFACE_URL,
           );
 
-          const ipexHandlers: Map<OobiIpexState, OobiIpexHandler> = new Map();
+          // Mapping of oobi state to its handler
+          const ipexHandlerMap: Map<OobiIpexState, OobiIpexHandler> = new Map();
           // oobi part
-          ipexHandlers.set("1_init", new MyChallengeSender());
-          ipexHandlers.set(
-            "2_2_response_received",
+          ipexHandlerMap.set("2_1_challenge_received", new MyResponseSender());
+          ipexHandlerMap.set("2_3_response_validated", new MyChallengeSender());
+          ipexHandlerMap.set(
+            "3_2_response_received",
             new YourResponseValidator(),
           );
-          ipexHandlers.set("3_1_challenge_received", new MyResponseSender());
-
           // ipex part
-          ipexHandlers.set("4_ready_to_issue", new AcdcIssuer());
-          ipexHandlers.set("6_issue_accepted", new AdmitMarker());
+          ipexHandlerMap.set(
+            "4_1_credential_received",
+            new CredentialAccepter(),
+          );
 
           const defaultInstance = new SignifyRepositoryDefaultImpl(
             client,
-            ipexHandlers,
+            ipexHandlerMap,
           );
           defaultInstance.connectToKeriaAgent();
           Signifies.instances.set(type, defaultInstance);
@@ -414,24 +415,33 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const holders = (await this.client.contacts().list()) as Contact[];
     console.log(`Holders: ${JSON.stringify(holders, null, 2)}`);
 
-    // TODO: Important!! ここでStatusの設定を行う。
+    // TODO: Important!! ここでStatusの設定を行う。(1)
 
-    // Issueの最後のステップ
-    // TODO: Statusの設定の中で、AdmitのNotificationの情報を取得して、存在すればStatusに6_issue_acceptedを設定する。
-    // TODO: そして、ooib-ipex.tsのAdmitMarkerを呼び出す。
+    // TODO: **Notification**の取得
+    // (1)-a.Challengeの取得を行う。
+    //    Statusの設定の中で、Challenge受信のNotification情報を取得して、存在すればStatusに2_1_challenge_receivedを設定する。
+    //    Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。
     // 参考: github.com/WebOfTrust/signify-ts/blob/cddb00713ce7b09b3f18acdaae559703759369bc/examples/integration-scripts/utils/test-util.ts#L479
+
+    // (1)-b. ResponseのValdiate状態を取得する。
+    //     Statusの設定の中で、ResponseのNotification情報を取得して、存在すればStatusに2_3_response_validatedを設定する。
+    //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。
+
+    // (1)-c. Credentialの取得を行う。
+    //   Statusの設定の中で、CredentialのNotification情報を取得して、存在すればStatusに4_1_credential_receivedを設定する。
+    //   その続きの諸路として、ContactをprogressIpex(..)に渡す。
 
     return [
       {
         name: "John Doe",
         pre: "pre1",
-        state: "2_1_challenge_sent",
+        state: "2_1_challenge_received",
         challenge: ["challenge1", "challenge2"],
       },
       {
         name: "Jane Doe",
         pre: "pre2",
-        state: "2_1_challenge_sent",
+        state: "2_1_challenge_received",
         challenge: ["challenge1", "challenge2"],
       },
     ];
@@ -457,7 +467,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     return {
       name: "John Doe",
       pre: "pre1",
-      state: "2_1_challenge_sent",
+      state: "2_1_challenge_received",
       challenge: ["challenge1", "challenge2"],
     };
   }
@@ -483,19 +493,11 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     await this.client.operations().wait(resolveOp);
     await this.client.operations().delete(resolveOp.name);
 
-    const holdertoAdd: Contact = {
+    return {
       // TODO: oobiから取得できるかもしれない。確認して修正する。
       pre: resolveResult.pre,
       state: "1_init",
       name: holderName,
-      challenge: ["challenge1", "challenge2"],
-    };
-    this.progressIpex(holdertoAdd);
-
-    return {
-      name: "John Doe",
-      pre: "pre1",
-      state: "2_1_challenge_sent",
       challenge: ["challenge1", "challenge2"],
     };
   }

@@ -7,8 +7,10 @@ export interface OobiIpexHandler {
   progress(client: signify.SignifyClient, holder: Contact): Promise<void>;
 }
 
-// OOBI Part
+// Note: 現状、各Handlerの最後に状態を遷移させてはいない。
+// フロントとAgentで二重管理にするのは避けたいので、Agent側の状態を確認して、逐次状態を反映させる。
 
+// OOBI Part
 export class MyChallengeSender implements OobiIpexHandler {
   async progress(client: signify.SignifyClient, holder: Contact) {
     console.log("ChallengeSender started.");
@@ -84,8 +86,9 @@ export class MyResponseSender implements OobiIpexHandler {
 }
 
 // IPEX Part
-export class IssuerAdmitter implements OobiIpexHandler {
+export class CredentialAccepter implements OobiIpexHandler {
   async progress(client: signify.SignifyClient, holder: Contact) {
+    console.log("IssuerAdmitter started.");
     // const holderNotifications = await waitForNotifications(
     //   holderClient,
     //   "/exn/ipex/grant",
@@ -106,8 +109,7 @@ export class IssuerAdmitter implements OobiIpexHandler {
 
     // await markAndRemoveNotification(holderClient, grantNotification);
 
-    console.log("AdmitMarker started.");
-
+    // TODO: 大枠はこれでいい。
     if (!holder.notification) {
       throw new IllegalStateException("Notification not found.");
     }
@@ -115,17 +117,17 @@ export class IssuerAdmitter implements OobiIpexHandler {
     await client.notifications().mark(holder.notification.i);
     await client.notifications().delete(holder.notification.i);
 
-    console.log("AdmitResponder finished.");
+    console.log("IssuerAdmitter finished.");
   }
 }
 
 export type OobiIpexState =
   | "1_init" // 初期状態
-  | "2_1_challenge_sent" // チャレンジ送信済み
-  | "2_2_response_received" // レスポンス受理
-  | "2_3_response_validated" // レスポンス検証済み
-  | "3_1_challenge_received" // チャレンジ受理
-  | "3_2_response_sent" // レスポンス送信済み
-  | "4_ready_to_issue" // レスポンス送信済み
-  | "5_issuing" // 発行中
-  | "6_issue_accepted"; // 発行済み
+  | "2_1_challenge_received" // チャレンジ受理
+  | "2_2_response_sent" // レスポンス送信済み
+  | "2_3_response_validated" // 送信したレスポンスが検証済み
+  | "3_1_challenge_sent" // チャレンジ送信
+  | "3_2_response_received" // レスポンス受理
+  | "3_3_response_validated" // レスポンス検証済み
+  | "4_1_credential_received"
+  | "4_2_credential_accepted";

@@ -92,20 +92,6 @@ const init = async () => {
 
   router.push("/");
 };
-// Note: OOBI URLの作り方
-// const oobi = await client.oobis().get("myAid", "agent");
-// console.log(JSON.stringify(oobi, null, 2));
-
-// Rotation周り
-// const x = await client.identifiers().rotate("myAid");
-
-// Note: VC周り
-// const y = await client.credentials().xxx()
-
-// Note: IPEX周り
-// const z = await client.ipex().admit()
-
-// ------
 
 const createMasterSecret = async () => {
   secretCreationLoader.value = true;
