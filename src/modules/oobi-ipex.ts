@@ -1,10 +1,10 @@
-import * as signify from "signify-ts";
+import { SignifyClient, Serder, IpexAdmitArgs } from "signify-ts";
 import { Contact } from "@/modules/repository";
 import { IllegalStateException } from "@/modules/exception";
 import { AidName } from "./const";
 
 export interface OobiIpexHandler {
-  progress(client: signify.SignifyClient, issuer: Contact): Promise<void>;
+  progress(client: SignifyClient, issuer: Contact): Promise<void>;
 }
 
 // Note: 現状、各Handlerの最後に状態を遷移させてはいない。
@@ -12,7 +12,7 @@ export interface OobiIpexHandler {
 
 // OOBI Part
 export class MyChallengeSender implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, issuer: Contact) {
+  async progress(client: SignifyClient, issuer: Contact) {
     console.log("ChallengeSender started.");
 
     // チャレンジ送信専用のメソッドがclientにない。
@@ -42,7 +42,7 @@ export class MyChallengeSender implements OobiIpexHandler {
 }
 
 export class YourResponseValidator implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, issuer: Contact) {
+  async progress(client: SignifyClient, issuer: Contact) {
     console.log("ChallengeResponseValidator started.");
 
     const challengeWord = sessionStorage.getItem(`challenge-${issuer.pre}`);
@@ -63,7 +63,7 @@ export class YourResponseValidator implements OobiIpexHandler {
       exn: Record<string, unknown>;
     };
     const verifyResponse = verifyOperation.response as VerifyResponse;
-    const serder = new signify.Serder(verifyResponse.exn);
+    const serder = new Serder(verifyResponse.exn);
 
     const resp = await client.challenges().responded(issuer.pre, serder.ked.d);
 
@@ -73,7 +73,7 @@ export class YourResponseValidator implements OobiIpexHandler {
 }
 
 export class MyResponseSender implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, issuer: Contact) {
+  async progress(client: SignifyClient, issuer: Contact) {
     console.log("ResponseSender started.");
 
     const response = await client
@@ -87,7 +87,7 @@ export class MyResponseSender implements OobiIpexHandler {
 
 // IPEX Part
 export class CredentialAccepter implements OobiIpexHandler {
-  async progress(client: signify.SignifyClient, issuer: Contact) {
+  async progress(client: SignifyClient, issuer: Contact) {
     console.log("IssuerAdmitter started.");
 
     if (!issuer.notification) {
@@ -97,7 +97,7 @@ export class CredentialAccepter implements OobiIpexHandler {
     const aid: AidName = "aid";
     const holder = await client.identifiers().get(aid);
 
-    const admitArgs: signify.IpexAdmitArgs = {
+    const admitArgs: IpexAdmitArgs = {
       senderName: holder.name,
       recipient: issuer.pre,
       message: "",

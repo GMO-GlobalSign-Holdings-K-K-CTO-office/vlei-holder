@@ -1,4 +1,10 @@
-import * as signify from "signify-ts";
+import {
+  ready,
+  randomPasscode,
+  SignifyClient,
+  Tier,
+  CreateIdentiferArgs,
+} from "signify-ts";
 import {
   IllegalArgumentException,
   IllegalStateException,
@@ -28,7 +34,7 @@ export class Signifies {
 
   static {
     (async () => {
-      await signify.ready();
+      await ready();
     })();
   }
 
@@ -69,10 +75,10 @@ export class Signifies {
     if (!Signifies.instances.has(type)) {
       switch (type) {
         case "default": {
-          const client = new signify.SignifyClient(
+          const client = new SignifyClient(
             import.meta.env.VITE_KERIA_BOOT_INTERFACE_URL,
             masterSecret,
-            signify.Tier.low,
+            Tier.low,
             import.meta.env.VITE_KERIA_BOOT_INTERFACE_URL,
           );
 
@@ -124,7 +130,7 @@ export class Signifies {
    * @returns master secret
    */
   static generateMasterSecret = async (): Promise<string> => {
-    return signify.randomPasscode();
+    return randomPasscode();
   };
 
   /**
@@ -238,11 +244,11 @@ export interface SignifyRepository {
  * Holds the SignifyClient instance and implements the interface methods.
  */
 class SignifyRepositoryDefaultImpl implements SignifyRepository {
-  private client: signify.SignifyClient;
+  private client: SignifyClient;
   private ipexHandlers: Map<OobiIpexState, OobiIpexHandler> = new Map();
 
   constructor(
-    client: signify.SignifyClient,
+    client: SignifyClient,
     ipexHandlers: Map<OobiIpexState, OobiIpexHandler>,
   ) {
     this.client = client;
@@ -268,7 +274,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     let aid = await this.client.identifiers().get(AID_NAME);
     if (!aid) {
       // Creation of InceptionEvent (AID/KEL generation)
-      const inceptionEventArgs: signify.CreateIdentiferArgs = {
+      const inceptionEventArgs: CreateIdentiferArgs = {
         wits: [...import.meta.env.VITE_WITNESS_URLS.split(",")],
       };
       const inceptionEvent = await this.client
@@ -412,7 +418,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
     // とりあえず仮定の型でモックデータを返す。
 
-    const holders: signify.Contact[] = await this.client.contacts().list();
+    const holders = await this.client.contacts().list();
     console.log(`Holders: ${JSON.stringify(holders, null, 2)}`);
 
     // TODO: Important!! ここでStatusの設定を行う。(1)
