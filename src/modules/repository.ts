@@ -1,4 +1,4 @@
-import * as signify from "signify/signify-ts.mjs";
+import * as signify from "signify-ts";
 import {
   IllegalArgumentException,
   IllegalStateException,
@@ -412,7 +412,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
     // とりあえず仮定の型でモックデータを返す。
 
-    const holders = (await this.client.contacts().list()) as Contact[];
+    const holders: signify.Contact[] = await this.client.contacts().list();
     console.log(`Holders: ${JSON.stringify(holders, null, 2)}`);
 
     // TODO: Important!! ここでStatusの設定を行う。(1)
@@ -470,7 +470,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       throw new IllegalStateException("pre is not set.");
     }
 
-    const holder = (await this.client.contacts().get(pre)) as Contact;
+    const holder = await this.client.contacts().get(pre);
     console.log(`Holder: ${JSON.stringify(holder, null, 2)}`);
 
     // TODO: Important!! getHolders(..)同様に、ここでStatusの設定を行う。

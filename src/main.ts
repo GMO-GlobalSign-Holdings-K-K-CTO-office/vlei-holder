@@ -16,4 +16,4 @@ app.config.errorHandler = (err, vm, info) => {
 };
 app.mount("#app");
 
-window.document.title = "メモアプリ";
+window.document.title = "ACDC Holder";

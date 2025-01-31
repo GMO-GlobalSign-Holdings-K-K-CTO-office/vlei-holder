@@ -69,7 +69,7 @@
   </v-dialog>
 </template>
 <script setup lang="ts">
-import { ref, reactive, defineEmits, type Ref } from "vue";
+import { ref, reactive, type Ref } from "vue";
 import { Signifies } from "@/modules/repository";
 
 const holderRegisterForm: Ref<any> = ref(null);

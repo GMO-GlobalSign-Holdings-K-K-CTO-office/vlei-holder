@@ -1,4 +1,4 @@
-import * as signify from "signify/signify-ts.mjs";
+import * as signify from "signify-ts";
 import { Contact } from "@/modules/repository";
 import { IllegalStateException } from "@/modules/exception";
 import { AidName } from "./const";
@@ -96,14 +96,15 @@ export class CredentialAccepter implements OobiIpexHandler {
 
     const aid: AidName = "aid";
     const holder = await client.identifiers().get(aid);
-    const [admitSerder, sigs, aend] = await client
-      .ipex()
-      .admit(
-        holder.name,
-        "",
-        issuer.notification.a.d!,
-        new Date().toISOString().replace("Z", "000+00:00"),
-      );
+
+    const admitArgs: signify.IpexAdmitArgs = {
+      senderName: holder.name,
+      recipient: issuer.pre,
+      message: "",
+      grantSaid: issuer.notification.a.d!,
+      datetime: new Date().toISOString().replace("Z", "000+00:00"),
+    };
+    const [admitSerder, sigs, aend] = await client.ipex().admit(admitArgs);
 
     const admitOperation = await client
       .ipex()

@@ -8,7 +8,7 @@
     }
   },
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--no-warnings' vite --mode dev",
+    "dev": "cross-env NODE_OPTIONS='--no-warnings' vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ignore-path .gitignore",
@@ -26,6 +26,7 @@
     "@mdi/font": "7.0.96",
     "core-js": "^3.34.0",
     "roboto-fontface": "*",
+    "signify-ts": "0.3.0-rc1",
     "vue": "^3.3.0",
     "vuetify": "^3.0.0",
     "webfontloader": "^1.6.28"
