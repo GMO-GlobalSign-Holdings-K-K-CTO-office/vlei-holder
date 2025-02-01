@@ -101,7 +101,7 @@ export class Signifies {
             client,
             ipexHandlerMap,
           );
-          defaultInstance.connectToKeriaAgent();
+          await defaultInstance.connectToKeriaAgent();
           Signifies.instances.set(type, defaultInstance);
           break;
         }
@@ -259,11 +259,11 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    *  Connect to the Keria Agent.
    */
   public async connectToKeriaAgent(): Promise<void> {
-    const bootResp = await this.client.boot();
-    console.log(`signfy client booted: ${JSON.stringify(bootResp, null, 2)}`);
-
     await this.client.connect();
     console.log("signify client connected");
+
+    const bootResp = await this.client.boot();
+    console.log(`signfy client booted: ${JSON.stringify(bootResp, null, 2)}`);
   }
 
   /**
