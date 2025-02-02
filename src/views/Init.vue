@@ -1,5 +1,5 @@
 <template>
-  <di class="d-flex justify-center align-center login-container">
+  <div class="d-flex justify-center align-center login-container">
     <v-card rounded="lg">
       <v-img
         src="/login-img.jpg"
@@ -43,8 +43,8 @@
         </v-card-actions>
       </v-form>
     </v-card>
-  </di>
-  <v-snackbar v-model="newSecretSnackbar" color="primary" multi-line="true">
+  </div>
+  <v-snackbar v-model="newSecretSnackbar" color="primary" multi-line>
     Your master secret is {{ masterSecret }}
     <template v-slot:actions>
       <v-btn color="accent" variant="text" @click="newSecretSnackbar = false">

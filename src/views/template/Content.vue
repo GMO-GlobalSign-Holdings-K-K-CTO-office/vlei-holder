@@ -46,7 +46,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-snackbar v-model="oobiSnackbar" color="primary" multi-line="true">
+    <v-snackbar v-model="oobiSnackbar" color="primary" multi-line>
       {{ oobi }}
       <template v-slot:actions>
         <v-btn color="accent" variant="text" @click="oobiSnackbar = false">

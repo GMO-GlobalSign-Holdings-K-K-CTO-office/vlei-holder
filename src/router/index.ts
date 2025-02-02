@@ -65,7 +65,6 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  next();
   if (to.matched.some((record) => record.meta.requiresInit)) {
     if (Signifies.isInitiationDone()) {
       next();

@@ -11,7 +11,7 @@ const app = createApp(App);
 registerPlugins(app);
 
 app.config.errorHandler = (err, vm, info) => {
-  console.error(`errorHandler: ${info}`, err);
+  console.error(`errorHandler: ${JSON.stringify(err)}, ${info}`);
   router.replace({ name: "ErrorDestination" });
 };
 app.mount("#app");
