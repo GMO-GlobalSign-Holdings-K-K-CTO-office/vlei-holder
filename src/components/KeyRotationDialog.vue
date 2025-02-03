@@ -37,7 +37,6 @@
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
-import { defineEmits } from "vue";
 import { Signifies } from "@/modules/repository";
 
 const MESSAGE_ON_ROTATION = "Are you sure to rotate the key?";
