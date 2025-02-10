@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import Content from "@/views/template/Content.vue";
 import Init from "@/views/Init.vue";
 import ErrorDestination from "@/views/ErrorDestination.vue";
-import IssuerList from "@/views/IssuerList.vue";
-import IssuerDetail from "@/views/IssuerDetail.vue";
+import SessionList from "@/views/SessionList.vue";
+import SessionDetail from "@/views/SessionDetail.vue";
 import Profile from "@/views/Profile.vue";
 import { Signifies } from "@/modules/repository";
 
@@ -16,20 +16,20 @@ const router = createRouter({
       component: Content,
       meta: { requiresInit: true },
       redirect: () => {
-        return { name: "Init" };
+        return { name: "SessionList" };
       },
       children: [
         {
-          path: "/issuer-list",
-          name: "IssuerList",
-          component: IssuerList,
-          meta: { title: "Issuer List" },
+          path: "/session-list",
+          name: "SessionList",
+          component: SessionList,
+          meta: { title: "Session List" },
         },
         {
-          path: "/issuer-detail/:pre/",
-          name: "IssuerDetail",
-          component: IssuerDetail,
-          meta: { title: "Issuer Detail" },
+          path: "/session-detail/:pre/",
+          name: "SessionDetail",
+          component: SessionDetail,
+          meta: { title: "Session Detail" },
         },
         {
           path: "/profile",
@@ -49,7 +49,7 @@ const router = createRouter({
           // Move to the next page if the initiation is done.
           // Note: Assume that there is no multiple master secrets(aid).
           next({
-            path: "/issuer-list",
+            path: "/session-list",
           });
         } else {
           next();

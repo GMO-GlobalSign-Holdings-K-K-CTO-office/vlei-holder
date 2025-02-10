@@ -80,7 +80,7 @@ onMounted(async () => {
 
 // Menu Section (Left Side)
 const menusRaw: { icon: string; text: PageName; to: PagePath }[] = [
-  { icon: "mdi-collage", text: "Holder List", to: "/holder-list" },
+  { icon: "mdi-collage", text: "Session List", to: "/session-list" },
 ];
 
 const menus = ref(menusRaw);

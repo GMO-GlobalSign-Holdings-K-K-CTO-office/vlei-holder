@@ -4,6 +4,7 @@ import {
   SignifyClient,
   Tier,
   CreateIdentiferArgs,
+  HabState,
 } from "signify-ts";
 import {
   IllegalArgumentException,
@@ -259,11 +260,15 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    *  Connect to the Keria Agent.
    */
   public async connectToKeriaAgent(): Promise<void> {
+    console.log("connectToKeriaAgent started");
+
     const bootResp = await this.client.boot();
     console.log(`signfy client booted: ${JSON.stringify(bootResp, null, 2)}`);
 
     await this.client.connect();
     console.log("signify client connected");
+
+    console.log("connectToKeriaAgent finished");
   }
 
   /**
@@ -271,12 +276,32 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    * @returns AID
    */
   public async createOrRetrieveAid(): Promise<string> {
-    let aid = await this.client.identifiers().get(AID_NAME);
+    console.log("createOrRetrieveAid started");
+    let aid: HabState | null = null;
+
+    try {
+      aid = await this.client.identifiers().get(AID_NAME);
+    } catch (e) {
+      console.log(`AID not found: ${JSON.stringify(e, null, 2)}`);
+    }
+
     if (!aid) {
       // Creation of InceptionEvent (AID/KEL generation)
+      // const inceptionEventArgs: CreateIdentiferArgs = {
+      //   wits: [...import.meta.env.VITE_WITNESS_URLS.split(",")],
+      // };
+
       const inceptionEventArgs: CreateIdentiferArgs = {
-        wits: [...import.meta.env.VITE_WITNESS_URLS.split(",")],
+        toad: 0,
       };
+
+      // if (import.meta.env.VITE_WITNESS_URLS) {
+      //   inceptionEventArgs.wits = [
+      //     ...import.meta.env.VITE_WITNESS_URLS.split(","),
+      //   ];
+      //   inceptionEventArgs.toad = 1;
+      // }
+
       const inceptionEvent = await this.client
         .identifiers()
         .create(AID_NAME, inceptionEventArgs);
@@ -305,6 +330,9 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
 
       aid = await this.client.identifiers().get(AID_NAME);
     }
+
+    console.log(`AID: ${JSON.stringify(aid, null, 2)}`);
+    console.log("createOrRetrieveAid finished");
     return aid.prefix;
   }
 
@@ -313,8 +341,12 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    * @returns Oobi
    */
   public async createOobi(): Promise<string> {
+    console.log("createOobi started");
+
     const oobi = await this.client.oobis().get(AID_NAME, KERIA_ROLE);
     console.log(JSON.stringify(oobi, null, 2));
+
+    console.log("createOobi finished");
     return oobi.oobi[0];
   }
 
@@ -324,14 +356,18 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   public async importVcSchema(
     schemaUrl: string = QVI_SCHEMA_URL,
   ): Promise<void> {
+    console.log("importVcSchema started");
+
     const resolveResult = await this.client.oobis().resolve(schemaUrl);
     console.log(
       `Schema OOBI Resolution Result: ${JSON.stringify(resolveResult, null, 2)}`,
     );
 
-    const resolveOp = await resolveResult.op();
-    await this.client.operations().wait(resolveOp);
-    await this.client.operations().delete(resolveOp.name);
+    // const resolveOp = await resolveResult.op();
+    // await this.client.operations().wait(resolveOp);
+    // await this.client.operations().delete(resolveOp.name);
+
+    console.log("importVcSchema finished");
   }
 
   /**
@@ -342,19 +378,31 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   public async createVcRegistry(
     registryName: string = VLEI_REGISTRY_NAME,
   ): Promise<void> {
+    console.log("createVcRegistry started");
+
     const holderAid = await this.client.identifiers().get(AID_NAME);
+    console.log(`Holder AID: ${JSON.stringify(holderAid, null, 2)}`);
+
     const registryCreationResult = await this.client
       .registries()
       .create({ name: holderAid.name, registryName });
+    console.log(
+      `Registry Creation Result: ${JSON.stringify(registryCreationResult, null, 2)}`,
+    );
 
-    await this.client.operations().wait(registryCreationResult.op);
-    await this.client.operations().delete(registryCreationResult.op.name);
+    const registryCreationOp = await registryCreationResult.op();
+    await this.client.operations().wait(registryCreationOp);
+    await this.client.operations().delete(registryCreationOp.name);
+
+    console.log("createVcRegistry finished");
   }
 
   /**
    * Get Profile.
    */
   public async getProfile(): Promise<Profile> {
+    console.log("getProfile started");
+
     const aid = await this.client.identifiers().get(AID_NAME);
     const profile: Profile = {
       // TODO: Important! properties other thant aid should be fetched from the Backend App which
@@ -365,6 +413,8 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       createdAt: "2024/01/01",
       aid: aid.prefix,
     };
+
+    console.log("getProfile finished");
     return profile;
   }
 
@@ -538,23 +588,27 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    * This method is for development only.
    */
   public async inspect(): Promise<void> {
+    console.log("inspect started");
+
     const states = await this.client.state();
     console.log(`states: ${JSON.stringify(states, null, 2)}`);
 
-    const keyStates = this.client.keyStates();
+    const keyStates = await this.client.keyStates();
     console.log(`keyStates: ${JSON.stringify(keyStates, null, 2)}`);
 
-    const operation = this.client.operations();
+    const operation = await this.client.operations();
     console.log(`operation: ${JSON.stringify(operation, null, 2)}`);
 
-    const notification = this.client.notifications();
+    const notification = await this.client.notifications();
     console.log(`notification: ${JSON.stringify(notification, null, 2)}`);
 
-    const exchanges = this.client.exchanges();
+    const exchanges = await this.client.exchanges();
     console.log(`exchanges: ${JSON.stringify(exchanges, null, 2)}`);
 
-    const registries = this.client.registries();
+    const registries = await this.client.registries();
     console.log(`registries: ${JSON.stringify(registries, null, 2)}`);
+
+    console.log("inspect finished");
   }
 }
 

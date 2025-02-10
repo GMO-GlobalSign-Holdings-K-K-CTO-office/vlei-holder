@@ -1,5 +1,5 @@
-export type PageName = "Profile" | "Holder List" | "Holder Detail";
-export type PagePath = "/" | "/profile" | "/holder-list" | "/holder-detail";
+export type PageName = "Profile" | "Session List" | "Session Detail";
+export type PagePath = "/" | "/profile" | "/session-list" | "/session-detail";
 
 export type ValidationRule = (v: string) => boolean | ErrorMessage;
 

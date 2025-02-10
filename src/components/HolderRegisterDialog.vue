@@ -20,7 +20,7 @@
     </template>
     <v-card>
       <v-toolbar color="accent" clipped-right>
-        <v-app-bar-title class="white--text">Register Holder</v-app-bar-title>
+        <v-app-bar-title class="white--text">Start Session</v-app-bar-title>
       </v-toolbar>
 
       <v-container>

@@ -113,7 +113,7 @@ const emit = defineEmits<{
 
 onMounted(async () => {
   await showHolders();
-  emit("pageName", "Holder List");
+  emit("pageName", "Session List");
   renderReady.value = true;
 });
 
