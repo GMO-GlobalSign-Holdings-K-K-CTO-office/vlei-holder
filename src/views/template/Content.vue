@@ -8,20 +8,21 @@
         @click.stop="navDrawn = !navDrawn"
       ></v-app-bar-nav-icon>
       <v-toolbar-title class="white--text">{{ pageName }}</v-toolbar-title>
-      <v-spacer></v-spacer>
       <!-- Right Part -->
       <v-btn
         :loader="oobiLoader"
-        class="white--text"
-        color="accent"
+        class="text-white mx-3"
         variant="outlined"
         @click="makeOobi"
         >Make Invitation</v-btn
       >
-      <v-btn icon to="/profile">
-        <v-icon color="accent">mdi-account</v-icon>
-      </v-btn>
-      <span class="white--text">{{ myAid }}</span>
+      <v-btn
+        class="text-white"
+        variant="outlined"
+        @click="router.push('/profile')"
+        >Profile</v-btn
+      >
+      <span class="white--text mx-3">{{ myAid }}</span>
     </v-app-bar>
 
     <!-- Menu(Left Side) -->
@@ -65,6 +66,7 @@
 import { ref, onMounted, type Ref } from "vue";
 import { type PageName, type PagePath } from "@/types";
 import { Signifies } from "@/modules/repository";
+import router from "@/router";
 
 const myAid: Ref<string | null> = ref(null);
 onMounted(async () => {

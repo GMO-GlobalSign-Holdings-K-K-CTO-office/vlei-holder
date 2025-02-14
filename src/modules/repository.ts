@@ -34,9 +34,10 @@ export class Signifies {
     new Map();
 
   static {
-    (async () => {
-      await ready();
-    })();
+    // ここでreadyすると、画面リロードでエラーになる。
+    // (async () => {
+    //   await ready();
+    // })();
   }
 
   private constructor() {}
@@ -76,6 +77,7 @@ export class Signifies {
     if (!Signifies.instances.has(type)) {
       switch (type) {
         case "default": {
+          await ready();
           const client = new SignifyClient(
             import.meta.env.VITE_KERIA_ADMIN_INTERFACE_URL,
             masterSecret,

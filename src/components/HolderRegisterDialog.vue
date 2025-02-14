@@ -21,6 +21,10 @@
     <v-card>
       <v-toolbar color="accent" clipped-right>
         <v-app-bar-title class="white--text">Start Session</v-app-bar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="closeDialog">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </v-toolbar>
 
       <v-container>
@@ -88,6 +92,10 @@ const uiState: {
   leiRule: [(v: string) => !!v || "LEI is required."],
   oobiRule: [(v: string) => !!v || "OOBI is required."],
 });
+
+const closeDialog = () => {
+  uiState.dialog = false;
+};
 
 const emit = defineEmits<{
   (e: "holderRegistered"): void;

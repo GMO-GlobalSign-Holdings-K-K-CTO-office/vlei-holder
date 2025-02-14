@@ -15,7 +15,7 @@
               >Detail</v-btn
             >
           </v-list-item-action>
-          <v-list-item-action>
+          <v-list-item-action class="ml-3">
             <v-btn
               variant="outlined"
               color="accent"
