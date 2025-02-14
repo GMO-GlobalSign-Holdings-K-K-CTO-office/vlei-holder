@@ -385,17 +385,28 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const holderAid = await this.client.identifiers().get(AID_NAME);
     console.log(`Holder AID: ${JSON.stringify(holderAid, null, 2)}`);
 
-    const registryCreationResult = await this.client
+    // TODO: ログからRegistryの型を作る。
+    const exisitingRegList: any[] = await this.client
       .registries()
-      .create({ name: holderAid.name, registryName });
-    console.log(
-      `Registry Creation Result: ${JSON.stringify(registryCreationResult, null, 2)}`,
-    );
+      .list(holderAid.name);
+    console.log(`RegList: ${JSON.stringify(exisitingRegList, null, 2)}`);
 
-    const registryCreationOp = await registryCreationResult.op();
-    await this.client.operations().wait(registryCreationOp);
-    await this.client.operations().delete(registryCreationOp.name);
+    const registryFound = exisitingRegList.some((registry) => {
+      return registry.name === registryName;
+    });
 
+    if (!registryFound) {
+      const registryCreationResult = await this.client
+        .registries()
+        .create({ name: holderAid.name, registryName });
+      console.log(
+        `Registry Creation Result: ${JSON.stringify(registryCreationResult, null, 2)}`,
+      );
+
+      const registryCreationOp = await registryCreationResult.op();
+      await this.client.operations().wait(registryCreationOp);
+      await this.client.operations().delete(registryCreationOp.name);
+    }
     console.log("createVcRegistry finished");
   }
 

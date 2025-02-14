@@ -10,7 +10,7 @@ import { registerPlugins } from "./plugins";
 const app = createApp(App);
 registerPlugins(app);
 
-app.config.errorHandler = (err, vm, info) => {
+app.config.errorHandler = (err) => {
   console.error(err);
   router.push({ name: "ErrorDestination" });
 };
