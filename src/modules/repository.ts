@@ -421,9 +421,9 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       // TODO: Important! properties other thant aid should be fetched from the Backend App which
       // does not exist in this project.
       // TODO: 重要！aid以外のプロパティは、このプロジェクトには存在しないバックエンドアプリから取得する必要があります。
-      name: "John Doe",
-      position: "CTO",
-      createdAt: "2024/01/01",
+      name: "John Doe(This should be fetched from the Backend App)",
+      position: "CTO(This should be fetched from the Backend App)",
+      createdAt: "2024/01/01(This should be fetched from the Backend App)",
       aid: aid.prefix,
     };
 

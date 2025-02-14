@@ -5,8 +5,8 @@
         <v-table class="elevation-2" style="width: 50%">
           <thead>
             <tr>
-              <th class="text-left">Item</th>
-              <th class="text-left">Value</th>
+              <th class="text-left text-secondary">Item</th>
+              <th class="text-left text-secondary">Value</th>
             </tr>
           </thead>
           <tbody>
@@ -18,16 +18,19 @@
             </tr>
           </tbody>
         </v-table>
+      </v-row>
 
-        <!-- TODO: this is only mockup-->
-        <v-timeline>
+      <!-- TODO: this is only mockup-->
+      <v-row justify="center" class="ma-5">
+        <v-timeline style="width: 50%">
           <v-timeline-item
+            dot-color="secondary"
             v-for="(history, index) in rotationHistory"
             :key="index"
           >
-            <template v-slot:icon>
+            <!-- <template v-slot:icon>
               <v-icon>mdi-clock</v-icon>
-            </template>
+            </template> -->
             <template v-slot:default>
               <v-card>
                 <v-card-title>
