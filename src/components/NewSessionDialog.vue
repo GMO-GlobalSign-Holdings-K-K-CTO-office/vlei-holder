@@ -3,7 +3,7 @@
     v-model="uiState.dialog"
     persistent
     transition="dialog-bottom-transition"
-    width="60vw"
+    width="55vw"
   >
     <template v-slot:activator="{ props }">
       <div class="float-button-wrapper">
@@ -29,7 +29,7 @@
 
       <v-container>
         <v-row>
-          <v-card class="mx-auto my-10" variant="flat" style="width: 50vw">
+          <v-card class="mx-auto my-2" variant="flat" style="width: 50vw">
             <v-card-subtitle class="mt-3"
               >Please input a holder's OOBI</v-card-subtitle
             >
@@ -98,7 +98,7 @@ const closeDialog = () => {
 };
 
 const emit = defineEmits<{
-  (e: "holderRegistered"): void;
+  (e: "sessionStarted"): void;
 }>();
 
 const registerHolder = async () => {
@@ -114,7 +114,7 @@ const registerHolder = async () => {
     uiState.loader = false;
     uiState.dialog = false;
 
-    emit("holderRegistered");
+    emit("sessionStarted");
   }
 };
 </script>

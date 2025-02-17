@@ -9,7 +9,7 @@
       >
         <v-card-title>ACDC Holder</v-card-title>
       </v-img>
-      <v-form ref="form">
+      <v-form ref="form" class="mx-5 mt-2">
         <v-text-field
           v-model="masterSecret"
           variant="underlined"
@@ -25,7 +25,7 @@
 
         <v-card-actions class="d-flex align-center flex-column">
           <v-btn
-            class="my-5"
+            class="mt-1 mb-2"
             variant="outlined"
             color="accent"
             @click="init"
@@ -33,8 +33,7 @@
             >Start</v-btn
           >
           <v-btn
-            class="my-5"
-            variant="outlined"
+            class="my-3"
             color="accent"
             @click="createMasterSecret"
             :loading="secretCreationLoader"
@@ -104,6 +103,6 @@ const createMasterSecret = async () => {
 .login-container {
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(to left, rgb(var(--v-theme-on-primary)), #4bbfc3);
+  background: linear-gradient(to left, rgb(var(--v-theme-on-primary)), #0075a9);
 }
 </style>

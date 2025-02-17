@@ -288,21 +288,20 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     }
 
     if (!aid) {
-      // Creation of InceptionEvent (AID/KEL generation)
       // const inceptionEventArgs: CreateIdentiferArgs = {
-      //   wits: [...import.meta.env.VITE_WITNESS_URLS.split(",")],
+      //   toad: 0,
       // };
 
-      const inceptionEventArgs: CreateIdentiferArgs = {
-        toad: 0,
-      };
-
-      // if (import.meta.env.VITE_WITNESS_URLS) {
-      //   inceptionEventArgs.wits = [
-      //     ...import.meta.env.VITE_WITNESS_URLS.split(","),
-      //   ];
-      //   inceptionEventArgs.toad = 1;
-      // }
+      const inceptionEventArgs: CreateIdentiferArgs = {};
+      const witsURLs = import.meta.env.VITE_WITNESS_URLS;
+      if (witsURLs) {
+        inceptionEventArgs.wits = [
+          ...import.meta.env.VITE_WITNESS_URLS.split(","),
+        ];
+        inceptionEventArgs.toad = 1;
+      } else {
+        throw new IllegalStateException("WITNESS_URLS is not set.");
+      }
 
       const inceptionEvent = await this.client
         .identifiers()
@@ -349,7 +348,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     console.log(JSON.stringify(oobi, null, 2));
 
     console.log("createOobi finished");
-    return oobi.oobi[0];
+    return oobi.oobis[0];
   }
 
   /**

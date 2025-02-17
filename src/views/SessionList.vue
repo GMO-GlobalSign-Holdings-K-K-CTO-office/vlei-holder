@@ -1,11 +1,15 @@
 <template>
   <template v-if="renderReady">
     <v-list>
-      <v-list-item v-for="(holder, i) in holders" :key="`list-${i}`">
-        <v-list-item-title class="font-weight-bold">
+      <v-list-item
+        class="my-2"
+        v-for="(holder, i) in holders"
+        :key="`list-${i}`"
+      >
+        <v-list-item-title>
           {{ holder.name }}
         </v-list-item-title>
-        <span>{{ holder.pre }}</span>
+        <v-list-item-subtitle>FooBar</v-list-item-subtitle>
         <template v-slot:append>
           <v-list-item-action>
             <v-btn
@@ -63,10 +67,10 @@
             </v-dialog>
           </v-list-item-action> -->
         </template>
-        <v-divider></v-divider>
+        <v-divider class="mt-2"></v-divider>
       </v-list-item>
     </v-list>
-    <holder-register-dialog @holderRegistered="holderRegistered" />
+    <new-session-dialog @sessionStarted="sessionStarted" />
     <v-snackbar
       :timeout="2000"
       v-model="noticeAfterIpex"
@@ -80,7 +84,7 @@
     </v-snackbar>
     <v-snackbar
       :timeout="2000"
-      v-model="noticeAfterHolderRegistered"
+      v-model="noticeAfterSessionStarted"
       centered
       variant="tonal"
       location="center"
@@ -101,7 +105,7 @@
 import { Signifies, type Contact } from "@/modules/repository";
 import { ref, onMounted, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import HolderRegisterDialog from "@/components/HolderRegisterDialog.vue";
+import NewSessionDialog from "@/components/NewSessionDialog.vue";
 import { OobiIpexState } from "@/modules/oobi-ipex";
 
 const renderReady = ref(false);
@@ -146,10 +150,10 @@ const progressIpex = async (holder: Contact) => {
   repository.inspect();
 };
 
-const noticeAfterHolderRegistered = ref(false);
+const noticeAfterSessionStarted = ref(false);
 const MESSAGE_ON_HOLDER_REGISTERED = "New holder registered.";
-const holderRegistered = async () => {
-  noticeAfterHolderRegistered.value = true;
+const sessionStarted = async () => {
+  noticeAfterSessionStarted.value = true;
   await showHolders();
 };
 

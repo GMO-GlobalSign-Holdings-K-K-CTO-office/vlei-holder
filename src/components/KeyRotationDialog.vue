@@ -9,12 +9,14 @@
           color="accent"
           class="mr-3 mb-3"
         >
-          <v-icon>mdi-plus</v-icon>
+          <v-icon>mdi-rotate-right</v-icon>
         </v-btn>
       </div>
     </template>
     <v-card>
-      <v-toolbar color="accent" class="px-4 text-white">TBD</v-toolbar>
+      <v-toolbar color="accent" class="px-4 text-white">{{
+        TITLE_ON_ROTATION
+      }}</v-toolbar>
       <v-card-text class="pa-4">
         <span class="text-glay">{{ MESSAGE_ON_ROTATION }}</span>
       </v-card-text>
@@ -39,6 +41,7 @@
 import { ref } from "vue";
 import { Signifies } from "@/modules/repository";
 
+const TITLE_ON_ROTATION = "Key Rotation";
 const MESSAGE_ON_ROTATION = "Are you sure to rotate the key?";
 
 const emit = defineEmits<{

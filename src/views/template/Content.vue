@@ -13,8 +13,8 @@
         :loader="oobiLoader"
         class="text-white mx-3"
         variant="outlined"
-        @click="makeOobi"
-        >Make Invitation</v-btn
+        @click="getOobi"
+        >Get Invitation</v-btn
       >
       <v-btn
         class="text-white"
@@ -47,10 +47,15 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-snackbar v-model="oobiSnackbar" color="primary" multi-line>
+    <v-snackbar
+      v-model="oobiSnackbar"
+      color="primary"
+      class="text-white"
+      vertical
+    >
       {{ oobi }}
       <template v-slot:actions>
-        <v-btn color="accent" variant="text" @click="oobiSnackbar = false">
+        <v-btn color="white" variant="text" @click="oobiSnackbar = false">
           Close
         </v-btn>
       </template>
@@ -103,7 +108,7 @@ const setPageName = (pageNameHandled: string) => {
 const oobi = ref("");
 const oobiLoader = ref(false);
 const oobiSnackbar = ref(false);
-const makeOobi = async () => {
+const getOobi = async () => {
   oobiLoader.value = true;
   const repository = await Signifies.getInstance();
   oobi.value = await repository.createOobi();
