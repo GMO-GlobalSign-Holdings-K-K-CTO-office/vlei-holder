@@ -9,7 +9,7 @@ declare module "*.vue" {
 interface ImportMetaEnv {
   readonly VITE_KERIA_ADMIN_INTERFACE_URL: string;
   readonly VITE_KERIA_BOOT_INTERFACE_URL: string;
-  readonly VITE_WITNESS_URLS: string;
+  readonly VITE_WITNESS_AIDS: string;
   readonly VITE_VLEI_SERVER_URL: string;
 }
 

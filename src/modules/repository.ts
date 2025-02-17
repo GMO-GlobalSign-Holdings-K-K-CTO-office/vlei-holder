@@ -293,11 +293,9 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       // };
 
       const inceptionEventArgs: CreateIdentiferArgs = {};
-      const witsURLs = import.meta.env.VITE_WITNESS_URLS;
-      if (witsURLs) {
-        inceptionEventArgs.wits = [
-          ...import.meta.env.VITE_WITNESS_URLS.split(","),
-        ];
+      const witsAids = import.meta.env.VITE_WITNESS_AIDS;
+      if (witsAids) {
+        inceptionEventArgs.wits = [...witsAids.split(",")];
         inceptionEventArgs.toad = 1;
       } else {
         throw new IllegalStateException("WITNESS_URLS is not set.");
