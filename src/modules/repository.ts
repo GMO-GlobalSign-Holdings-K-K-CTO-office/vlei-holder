@@ -298,7 +298,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
         inceptionEventArgs.wits = [...witsAids.split(",")];
         inceptionEventArgs.toad = 1;
       } else {
-        throw new IllegalStateException("WITNESS_URLS is not set.");
+        throw new IllegalStateException("WITNESS_AIDS is not set.");
       }
 
       const inceptionEvent = await this.client
