@@ -49,16 +49,30 @@
 
     <v-snackbar
       v-model="oobiSnackbar"
-      color="primary"
-      class="text-white"
+      color="accent"
+      multi-line
+      timeout="10000"
       vertical
+      variant="outlined"
     >
       {{ oobi }}
       <template v-slot:actions>
-        <v-btn color="white" variant="text" @click="oobiSnackbar = false">
+        <v-btn icon @click="copyOobiText">
+          <v-icon size="small">mdi-content-copy</v-icon>
+        </v-btn>
+        <v-btn color="accent" variant="text" @click="oobiSnackbar = false">
           Close
         </v-btn>
       </template>
+    </v-snackbar>
+    <v-snackbar
+      v-model="oobiCopiedSnackbar"
+      location="center"
+      color="accent"
+      timeout="2000"
+      variant="outlined"
+    >
+      <div class="d-flex justify-center">Invitation Copied!</div>
     </v-snackbar>
 
     <!-- Main Area -->
@@ -77,12 +91,6 @@ const myAid: Ref<string | null> = ref(null);
 onMounted(async () => {
   const repository = await Signifies.getInstance();
   myAid.value = await repository.createOrRetrieveAid();
-  // myAid.value = (await repository.createOrRetrieveAid())
-  //   .substring(0, 30)
-  //   .concat("...");
-
-  // for debugging purpose only
-  // repository.inspect();
 });
 
 // Menu Section (Left Side)
@@ -95,8 +103,6 @@ const navDrawn = ref(false);
 const closeMenu = () => {
   navDrawn.value = false;
 };
-
-// ------
 
 // Header Section
 const pageName: Ref<string | null> = ref(null);
@@ -117,6 +123,12 @@ const getOobi = async () => {
 
   // for debugging purpose only
   repository.inspect();
+};
+
+const oobiCopiedSnackbar = ref(false);
+const copyOobiText = () => {
+  navigator.clipboard.writeText(oobi.value);
+  oobiCopiedSnackbar.value = true;
 };
 </script>
 <style scoped></style>

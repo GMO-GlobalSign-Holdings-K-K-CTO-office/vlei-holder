@@ -45,7 +45,7 @@ const router = createRouter({
       meta: { title: "Initiation" },
       component: Init,
       beforeEnter: async (to, from, next) => {
-        if (Signifies.isInitiationDone()) {
+        if (Signifies.isInitiationDone() && from.path !== "/error") {
           // Move to the next page if the initiation is done.
           // Note: Assume that there is no multiple master secrets(aid).
           next({

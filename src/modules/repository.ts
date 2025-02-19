@@ -14,7 +14,6 @@ import {
   OobiIpexHandler,
   YourResponseValidator,
   MyResponseSender,
-  MyChallengeSender,
   OobiIpexState,
   CredentialAccepter,
 } from "@/modules/oobi-ipex";
@@ -89,7 +88,6 @@ export class Signifies {
           const ipexHandlerMap: Map<OobiIpexState, OobiIpexHandler> = new Map();
           // oobi part
           ipexHandlerMap.set("2_1_challenge_received", new MyResponseSender());
-          ipexHandlerMap.set("2_3_response_validated", new MyChallengeSender());
           ipexHandlerMap.set(
             "3_2_response_received",
             new YourResponseValidator(),
@@ -214,27 +212,27 @@ export interface SignifyRepository {
   getHolders(): Promise<Contact[]>;
 
   /**
-   * Get Holder.
+   * Get Session.
    *
-   * @param pre AID prefix
+   * @param pre Correspondent AID prefix
    */
-  getHolder(pre: string): Promise<Contact>;
+  getSession(pre: string): Promise<Contact>;
 
   /**
-   * Add Holder.
+   * Add Session.
    *
    * @param oobi Oobi
-   * @param holderName Holder Name
+   * @param correspondentName Correspondent Name
    * @returns holder
    */
-  addHolder(oobi: string, holderName: string): Promise<Contact>;
+  addSession(oobi: string, correspondentName: string): Promise<Contact>;
 
   /**
    * Progress Ipex.
    *
-   * @param holder
+   * @param correspondent
    */
-  progressIpex(holder: Contact): Promise<void>;
+  progressIpex(correspondent: Contact): Promise<void>;
 
   /**
    * This method is for development only.
@@ -518,7 +516,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    *
    * @param pre AID prefix
    */
-  public async getHolder(pre: string): Promise<Contact> {
+  public async getSession(pre: string): Promise<Contact> {
     // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
     // とりあえず仮定の型でモックデータを返す。
     if (!pre) {
@@ -539,18 +537,23 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   }
 
   /**
-   * add Holder.
+   * add session.
    *
    * @param oobi Oobi
    * @param holderName Holder Name
    * @returns holder
    */
-  public async addHolder(oobi: string, holderName: string): Promise<Contact> {
-    if (!oobi || !holderName) {
+  public async addSession(
+    oobi: string,
+    coorespondentName: string,
+  ): Promise<Contact> {
+    if (!oobi || !coorespondentName) {
       throw new IllegalArgumentException("oobi or holderName is not set.");
     }
 
-    const resolveResult = await this.client.oobis().resolve(oobi, holderName);
+    const resolveResult = await this.client
+      .oobis()
+      .resolve(oobi, coorespondentName);
     console.log(
       `Oobi Resolution Result: ${JSON.stringify(resolveResult, null, 2)}`,
     );
@@ -563,7 +566,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       // TODO: oobiから取得できるかもしれない。確認して修正する。
       pre: resolveResult.pre,
       state: "1_init",
-      name: holderName,
+      name: coorespondentName,
       challenge: ["challenge1", "challenge2"],
     };
   }

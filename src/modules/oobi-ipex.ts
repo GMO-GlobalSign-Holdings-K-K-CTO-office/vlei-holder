@@ -11,35 +11,37 @@ export interface OobiIpexHandler {
 // フロントとAgentで二重管理にするのは避けたいので、Agent側の状態を確認して、逐次状態を反映させる。
 
 // OOBI Part
-export class MyChallengeSender implements OobiIpexHandler {
-  async progress(client: SignifyClient, issuer: Contact) {
-    console.log("ChallengeSender started.");
+// Important!!: Githubで聞いた結果、チャレンジはOut-of-Bandで送信するのプラクティスとのこと
 
-    // チャレンジ送信専用のメソッドがclientにない。
-    // とりあえずlow-levelなexchangeを使って、チャレンジを送信するが、ここはGLEIFに問い合わせる。
-    // Challengeをビデオチャット経由で送信してもいいのか？(そうするべきなら、Challenge生成のUIを作る。)
-    const sender = await client.identifiers().get("aid");
-    const challengeSmall = await client.challenges().generate(128);
-    sessionStorage.setItem(
-      `challenge-${issuer.pre}`,
-      JSON.stringify(challengeSmall),
-    );
+// export class MyChallengeSender implements OobiIpexHandler {
+//   async progress(client: SignifyClient, issuer: Contact) {
+//     console.log("ChallengeSender started.");
 
-    const resp = await client
-      .exchanges()
-      .send(
-        "aid",
-        "challenge",
-        sender,
-        "/challenge",
-        { words: challengeSmall.words },
-        {},
-        [issuer.pre],
-      );
-    console.log(`Challenge Sent: ${JSON.stringify(resp, null, 2)}`);
-    console.log("ChallengeSender finished.");
-  }
-}
+//     // チャレンジ送信専用のメソッドがclientにない。
+//     // とりあえずlow-levelなexchangeを使って、チャレンジを送信するが、ここはGLEIFに問い合わせる。
+//     // Challengeをビデオチャット経由で送信してもいいのか？(そうするべきなら、Challenge生成のUIを作る。)
+//     const sender = await client.identifiers().get("aid");
+//     const challengeSmall = await client.challenges().generate(128);
+//     sessionStorage.setItem(
+//       `challenge-${issuer.pre}`,
+//       JSON.stringify(challengeSmall),
+//     );
+
+//     const resp = await client
+//       .exchanges()
+//       .send(
+//         "aid",
+//         "challenge",
+//         sender,
+//         "/challenge",
+//         { words: challengeSmall.words },
+//         {},
+//         [issuer.pre],
+//       );
+//     console.log(`Challenge Sent: ${JSON.stringify(resp, null, 2)}`);
+//     console.log("ChallengeSender finished.");
+//   }
+// }
 
 export class YourResponseValidator implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {

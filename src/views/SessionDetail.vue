@@ -19,6 +19,62 @@
           </tbody>
         </v-table>
       </v-row>
+
+      <!-- Challenge Acceptance Part -->
+      <challenge-acceptance-dialog @challengeAccepted="challengeAccepted" />
+      <v-snackbar
+        v-model="challengeAcceptedSnackbar"
+        color="accent"
+        multi-line
+        timeout="2000"
+        vertical
+        variant="outlined"
+      >
+        Challenge Accepted!
+        <template v-slot:actions>
+          <v-btn
+            color="accent"
+            variant="text"
+            @click="challengeAcceptedSnackbar = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
+
+      <!-- Challenge Generation Part -->
+      <!-- TODO: Button作成 (InitのMasterSecretを参考に) -->
+      <v-snackbar
+        v-model="challengeGenSnackbar"
+        color="accent"
+        multi-line
+        timeout="10000"
+        vertical
+        variant="outlined"
+      >
+        {{ challengeWord }}
+        <template v-slot:actions>
+          <v-btn icon @click="copyChallengeText">
+            <v-icon size="small">mdi-content-copy</v-icon>
+          </v-btn>
+          <v-btn
+            color="accent"
+            variant="text"
+            @click="challengeGenSnackbar = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
+      <v-snackbar
+        v-model="challengeCopiedSnackbar"
+        location="center"
+        color="accent"
+        timeout="2000"
+        variant="outlined"
+      >
+        <div class="d-flex justify-center">Challenge Word Copied!</div>
+      </v-snackbar>
     </template>
     <template v-else>
       <v-progress-linear
@@ -32,23 +88,40 @@
 import { onMounted, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
 import { Signifies, type Contact } from "@/modules/repository";
+import ChallengeAcceptanceDialog from "@/components/ChallengeAcceptanceDialog.vue";
 
 const renderReady = ref(false);
 const contact: Ref<Contact | null> = ref(null);
+const challengeAcceptedSnackbar = ref(false);
 
 const route = useRoute();
+
 const showDetail = async () => {
   const repository = await Signifies.getInstance();
-  const prefix = route.params.pre;
-  if (Array.isArray(prefix)) {
+  const correspondentPrefix = route.params.pre;
+  if (Array.isArray(correspondentPrefix)) {
     throw new Error("Invalid pre");
   } else {
-    contact.value = await repository.getHolder(prefix);
-    console.log(`Contact: ${JSON.stringify(contact.value, null, 2)}`);
+    contact.value = await repository.getSession(correspondentPrefix);
+    console.log(`Session: ${JSON.stringify(contact.value, null, 2)}`);
   }
 
   // for debugging purpose only
   await repository.inspect();
+};
+
+const challengeAccepted = async () => {
+  renderReady.value = false;
+  await showDetail();
+  renderReady.value = true;
+};
+
+const challengeGenSnackbar = ref(false);
+const challengeCopiedSnackbar = ref(false);
+const challengeWord = ref("");
+const copyChallengeText = () => {
+  navigator.clipboard.writeText(challengeWord.value);
+  challengeCopiedSnackbar.value = true;
 };
 
 onMounted(async () => {
