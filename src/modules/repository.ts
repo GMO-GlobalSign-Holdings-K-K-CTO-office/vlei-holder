@@ -206,7 +206,7 @@ export interface SignifyRepository {
   /**
    * Get Rotation History.
    */
-  getRotationHistory(): Promise<RotationHistory[]>;
+  getRotationHistory(): Promise<KeyEvent[]>;
 
   /**
    * Get Holders.
@@ -432,43 +432,32 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    * Rotate the key.
    */
   public async rotateKey(): Promise<void> {
+    console.log("rotateKey started");
+
     const rotateEvent = await this.client.identifiers().rotate(AID_NAME);
-    console.log(JSON.stringify(rotateEvent, null, 2));
+    console.log(`Rotate Event: ${JSON.stringify(rotateEvent, null, 2)}`);
 
     const rotateOp = await rotateEvent.op();
     await this.client.operations().wait(rotateOp);
     await this.client.operations().delete(rotateOp.name);
+
+    console.log("rotateKey finished");
   }
 
   /**
    * TODO: Get Rotation History.
    */
-  public async getRotationHistory(): Promise<RotationHistory[]> {
-    const agent = this.client.agent;
-    if (agent) {
-      const kel = await this.client.keyEvents().get(agent.pre);
-      // TODO: ここを確認して、RotationHistoryの型を定義して変換してreturnする。
-      // TODO: Check here and define the RotationHistory type and convert it to return.
-      console.log(`KEL: ${JSON.stringify(kel, null, 2)}`);
+  public async getRotationHistory(): Promise<KeyEvent[]> {
+    console.log("getRotationHistory started");
 
-      // Return mockup data for now.
-      return [
-        {
-          publicKey: "publicKey1",
-          createdDate: "2024/01/01",
-        },
-        {
-          publicKey: "publicKey2",
-          createdDate: "2024/01/02",
-        },
-        {
-          publicKey: "publicKey3",
-          createdDate: "2024/01/03",
-        },
-      ];
-    } else {
-      throw new IllegalStateException("Agent is not set.");
-    }
+    const aid = await this.client.identifiers().get(AID_NAME);
+    const kel: KeyEvent[] = (await this.client
+      .keyEvents()
+      .get(aid.prefix)) as KeyEvent[];
+    console.log(`KEL: ${JSON.stringify(kel, null, 2)}`);
+
+    console.log("getRotationHistory finished");
+    return kel;
   }
 
   /**
@@ -633,6 +622,13 @@ export type Profile = {
 export type RotationHistory = {
   publicKey: string;
   createdDate: string;
+};
+
+export type KeyEvent = {
+  ked: {
+    k: string[];
+    s: string;
+  };
 };
 
 // TODO: 仮の型定義。実際のSDK戻り値を確認して修正する。

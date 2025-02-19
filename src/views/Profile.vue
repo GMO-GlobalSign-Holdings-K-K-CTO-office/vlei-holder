@@ -22,7 +22,7 @@
 
       <!-- TODO: this is only mockup-->
       <v-row justify="center" class="ma-5">
-        <v-timeline style="width: 50%">
+        <v-timeline>
           <v-timeline-item
             dot-color="secondary"
             v-for="(history, index) in rotationHistory"
@@ -33,11 +33,10 @@
             </template> -->
             <template v-slot:default>
               <v-card>
-                <v-card-title>
-                  {{ history.createdDate }}
-                </v-card-title>
                 <v-card-text>
-                  {{ history.publicKey }}
+                  Pub Keys: {{ history.ked.k?.join(",") }} <br />Sequence
+                  Number:
+                  {{ history.ked.s }}
                 </v-card-text>
               </v-card>
             </template>
@@ -68,14 +67,10 @@
 <script setup lang="ts">
 import { onMounted, ref, type Ref } from "vue";
 import KeyRotationDialog from "@/components/KeyRotationDialog.vue";
-import {
-  Signifies,
-  type Profile,
-  type RotationHistory,
-} from "@/modules/repository";
+import { Signifies, type Profile, type KeyEvent } from "@/modules/repository";
 const renderReady = ref(false);
 const profile: Ref<Profile | null> = ref(null);
-const rotationHistory: Ref<RotationHistory[] | null> = ref(null);
+const rotationHistory: Ref<KeyEvent[] | null> = ref(null);
 
 const MESSAGE_AFTER_KEY_ROTATION = "Key rotation has been completed.";
 

@@ -43,13 +43,31 @@
       </v-form>
     </v-card>
   </div>
-  <v-snackbar v-model="newSecretSnackbar" color="primary" multi-line>
-    Your master secret is {{ masterSecret }}
+  <v-snackbar
+    v-model="newSecretSnackbar"
+    color="accent"
+    multi-line
+    timeout="10000"
+    variant="outlined"
+  >
+    {{ masterSecret }}
     <template v-slot:actions>
+      <v-btn icon @click="copySecretText">
+        <v-icon size="small">mdi-content-copy</v-icon>
+      </v-btn>
       <v-btn color="accent" variant="text" @click="newSecretSnackbar = false">
         Close
       </v-btn>
     </template>
+  </v-snackbar>
+  <v-snackbar
+    v-model="secretCopiedSnackbar"
+    location="right top"
+    color="accent"
+    timeout="2000"
+    variant="outlined"
+  >
+    <div class="d-flex justify-center">Secret Copied!</div>
   </v-snackbar>
 </template>
 <script setup lang="ts">
@@ -68,8 +86,6 @@ const secretRules = [
 ];
 
 const initLoader = ref(false);
-const secretCreationLoader = ref(false);
-const newSecretSnackbar = ref(false);
 
 onMounted(async () => {});
 
@@ -92,11 +108,19 @@ const init = async () => {
   router.push("/");
 };
 
+const secretCreationLoader = ref(false);
+const newSecretSnackbar = ref(false);
 const createMasterSecret = async () => {
   secretCreationLoader.value = true;
   masterSecret.value = await Signifies.generateMasterSecret();
   secretCreationLoader.value = false;
   newSecretSnackbar.value = true;
+};
+
+const secretCopiedSnackbar = ref(false);
+const copySecretText = () => {
+  navigator.clipboard.writeText(masterSecret.value);
+  secretCopiedSnackbar.value = true;
 };
 </script>
 <style scoped>

@@ -20,7 +20,7 @@
       <v-card-text class="pa-4">
         <span class="text-glay">{{ MESSAGE_ON_ROTATION }}</span>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="mb-1">
         <v-spacer></v-spacer>
         <v-btn
           :loading="keyRotationLoader"
