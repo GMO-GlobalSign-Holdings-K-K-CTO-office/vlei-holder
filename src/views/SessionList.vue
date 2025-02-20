@@ -3,11 +3,11 @@
     <v-list>
       <v-list-item
         class="my-2"
-        v-for="(holder, i) in holders"
+        v-for="(session, i) in sessions"
         :key="`list-${i}`"
       >
         <v-list-item-title>
-          {{ holder.name }}
+          {{ session.name }}
         </v-list-item-title>
         <v-list-item-subtitle>FooBar</v-list-item-subtitle>
         <template v-slot:append>
@@ -15,7 +15,7 @@
             <v-btn
               variant="outlined"
               color="secondary"
-              @click="navigateToHolderDetail(holder.pre)"
+              @click="navigateToSessionDetail(session.pre)"
               >Detail</v-btn
             >
           </v-list-item-action>
@@ -23,10 +23,10 @@
             <v-btn
               variant="outlined"
               color="accent"
-              :disabled="!canIpexStateProceed(holder.state)"
+              :disabled="!canIpexStateProceed(session.state)"
               :loading="ipexProgressing"
-              @click="progressIpex(holder)"
-              >{{ oobiIpexButtonTextMap.get(holder.state) }}</v-btn
+              @click="progressIpex(session)"
+              >{{ oobiIpexButtonTextMap.get(session.state) }}</v-btn
             >
           </v-list-item-action>
 
@@ -109,29 +109,29 @@ import NewSessionDialog from "@/components/NewSessionDialog.vue";
 import { OobiIpexState } from "@/modules/oobi-ipex";
 
 const renderReady = ref(false);
-const holders: Ref<Contact[]> = ref([]);
 
 const emit = defineEmits<{
   (e: "pageName", pageName: string): void;
 }>();
 
 onMounted(async () => {
-  await showHolders();
+  await showSessions();
   emit("pageName", "Session List");
   renderReady.value = true;
 });
 
-const showHolders = async () => {
+const sessions: Ref<Contact[]> = ref([]);
+const showSessions = async () => {
   const repository = await Signifies.getInstance();
-  holders.value = await repository.getHolders();
+  sessions.value = await repository.getSessions();
 
   // for debugging purpose only
   repository.inspect();
 };
 
 const router = useRouter();
-const navigateToHolderDetail = async (pre: string) => {
-  router.push({ name: "HolderDetail", params: { pre } });
+const navigateToSessionDetail = async (pre: string) => {
+  router.push({ name: "SessionDetail", params: { pre } });
 };
 
 const noticeAfterIpex = ref(false);
@@ -142,7 +142,7 @@ const progressIpex = async (holder: Contact) => {
   const repository = await Signifies.getInstance();
   await repository.progressIpex(holder);
 
-  await showHolders();
+  await showSessions();
   ipexProgressing.value = false;
   noticeAfterIpex.value = true;
 
@@ -154,7 +154,7 @@ const noticeAfterSessionStarted = ref(false);
 const MESSAGE_ON_HOLDER_REGISTERED = "New holder registered.";
 const sessionStarted = async () => {
   noticeAfterSessionStarted.value = true;
-  await showHolders();
+  await showSessions();
 };
 
 const oobiIpexButtonTextMap: Map<OobiIpexState, string> = new Map();

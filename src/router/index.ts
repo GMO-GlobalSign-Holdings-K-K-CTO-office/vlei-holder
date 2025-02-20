@@ -6,6 +6,7 @@ import ErrorDestination from "@/views/ErrorDestination.vue";
 import SessionList from "@/views/SessionList.vue";
 import SessionDetail from "@/views/SessionDetail.vue";
 import Profile from "@/views/Profile.vue";
+import EventHistory from "@/views/EventHistory.vue";
 import { Signifies } from "@/modules/repository";
 
 const router = createRouter({
@@ -36,6 +37,12 @@ const router = createRouter({
           name: "Profile",
           component: Profile,
           meta: { title: "Profile" },
+        },
+        {
+          path: "/event-history",
+          name: "EventHistory",
+          component: EventHistory,
+          meta: { title: "Event Hsitory" },
         },
       ],
     },

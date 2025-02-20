@@ -16,12 +16,13 @@
         @click="getOobi"
         >Get Invitation</v-btn
       >
-      <v-btn
+      <!-- Left Paneに移行 -->
+      <!-- <v-btn
         class="text-white"
         variant="outlined"
         @click="router.push('/profile')"
         >Profile</v-btn
-      >
+      > -->
       <span class="white--text mx-3">{{ myAid }}</span>
     </v-app-bar>
 
@@ -85,7 +86,6 @@
 import { ref, onMounted, type Ref } from "vue";
 import { type PageName, type PagePath } from "@/types";
 import { Signifies } from "@/modules/repository";
-import router from "@/router";
 
 const myAid: Ref<string | null> = ref(null);
 onMounted(async () => {
@@ -95,7 +95,9 @@ onMounted(async () => {
 
 // Menu Section (Left Side)
 const menusRaw: { icon: string; text: PageName; to: PagePath }[] = [
-  { icon: "mdi-collage", text: "Session List", to: "/session-list" },
+  { icon: "mdi-list-box", text: "Session List", to: "/session-list" },
+  { icon: "mdi-account", text: "Profile", to: "/profile" },
+  { icon: "mdi-history", text: "Event History", to: "/event-history" },
 ];
 
 const menus = ref(menusRaw);

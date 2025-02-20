@@ -68,7 +68,7 @@
 </template>
 <script setup lang="ts">
 import { ref, reactive, type Ref } from "vue";
-import { Signifies } from "@/modules/repository";
+import { Signifies, type Contact } from "@/modules/repository";
 
 const challengeAcceptanceForm: Ref<any> = ref(null);
 const uiState: {
@@ -91,14 +91,29 @@ const emit = defineEmits<{
   (e: "challengeAccepted"): void;
 }>();
 
+defineProps({
+  contactName: {
+    type: String,
+    required: true,
+  },
+  contactPrefix: {
+    type: String,
+    required: true,
+  },
+});
+
 const acceptChallenge = async () => {
   if ((await challengeAcceptanceForm.value.validate()).valid) {
     uiState.loader = true;
 
-    const challenge = uiState.challenge as string;
-
     const repository = await Signifies.getInstance();
-    await repository.acceptChallenge(challenge);
+    const contact: Contact = {
+      challenge: [uiState.challenge as string],
+      name: contactName,
+      pre: contactPrefix,
+      state: "2_1_challenge_received",
+    };
+    await repository.progressIpex(contact);
 
     uiState.loader = false;
     uiState.dialog = false;

@@ -21,7 +21,11 @@
       </v-row>
 
       <!-- Challenge Acceptance Part -->
-      <challenge-acceptance-dialog @challengeAccepted="challengeAccepted" />
+      <challenge-acceptance-dialog
+        :contactName="contact.name"
+        :contactPre="contact.pre"
+        @challengeAccepted="challengeAccepted"
+      />
       <v-snackbar
         v-model="challengeAcceptedSnackbar"
         color="accent"
@@ -43,7 +47,17 @@
       </v-snackbar>
 
       <!-- Challenge Generation Part -->
-      <!-- TODO: Button作成 (InitのMasterSecretを参考に) -->
+      <div class="float-button-wrapper">
+        <v-btn
+          size="large"
+          icon
+          color="accent"
+          class="mr-3 mb-3"
+          @click="generateChallenge"
+        >
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
+      </div>
       <v-snackbar
         v-model="challengeGenSnackbar"
         color="accent"
@@ -110,15 +124,24 @@ const showDetail = async () => {
   await repository.inspect();
 };
 
+// Challenge Acceptance Part
 const challengeAccepted = async () => {
   renderReady.value = false;
   await showDetail();
   renderReady.value = true;
 };
 
+// Challenge Generation Part
 const challengeGenSnackbar = ref(false);
 const challengeCopiedSnackbar = ref(false);
 const challengeWord = ref("");
+
+const generateChallenge = async () => {
+  const repository = await Signifies.getInstance();
+  challengeWord.value = await repository.generateChallenge();
+  challengeGenSnackbar.value = true;
+};
+
 const copyChallengeText = () => {
   navigator.clipboard.writeText(challengeWord.value);
   challengeCopiedSnackbar.value = true;
@@ -129,4 +152,15 @@ onMounted(async () => {
   renderReady.value = true;
 });
 </script>
-<style scoped></style>
+<style scoped>
+.float-button-wrapper {
+  width: 5vw;
+  left: 95vw;
+  height: 5vh;
+  top: 95vh;
+  position: fixed;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+</style>

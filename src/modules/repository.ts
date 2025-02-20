@@ -202,14 +202,14 @@ export interface SignifyRepository {
   rotateKey(): Promise<void>;
 
   /**
-   * Get Rotation History.
+   * Get Event History.
    */
-  getRotationHistory(): Promise<KeyEvent[]>;
+  getEventHistory(): Promise<KeyEvent[]>;
 
   /**
    * Get Holders.
    */
-  getHolders(): Promise<Contact[]>;
+  getSessions(): Promise<Contact[]>;
 
   /**
    * Get Session.
@@ -226,6 +226,13 @@ export interface SignifyRepository {
    * @returns holder
    */
   addSession(oobi: string, correspondentName: string): Promise<Contact>;
+
+  /**
+   * Generate Challenge.
+   *
+   * @returns challenge
+   */
+  generateChallenge(): Promise<string>;
 
   /**
    * Progress Ipex.
@@ -443,10 +450,10 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   }
 
   /**
-   * TODO: Get Rotation History.
+   * Get Event History.
    */
-  public async getRotationHistory(): Promise<KeyEvent[]> {
-    console.log("getRotationHistory started");
+  public async getEventHistory(): Promise<KeyEvent[]> {
+    console.log("getEventHistory started");
 
     const aid = await this.client.identifiers().get(AID_NAME);
     const kel: KeyEvent[] = (await this.client
@@ -454,19 +461,19 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       .get(aid.prefix)) as KeyEvent[];
     console.log(`KEL: ${JSON.stringify(kel, null, 2)}`);
 
-    console.log("getRotationHistory finished");
+    console.log("getEventHistory finished");
     return kel;
   }
 
   /**
-   * Get Holders.
+   * Get Sessions
    */
-  public async getHolders(): Promise<Contact[]> {
+  public async getSessions(): Promise<Contact[]> {
     // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
     // とりあえず仮定の型でモックデータを返す。
 
-    const holders = await this.client.contacts().list();
-    console.log(`Holders: ${JSON.stringify(holders, null, 2)}`);
+    const sessions = await this.client.contacts().list();
+    console.log(`Sessions: ${JSON.stringify(sessions, null, 2)}`);
 
     // TODO: Important!! ここでStatusの設定を行う。(1)
 
@@ -524,7 +531,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     }
 
     const holder = await this.client.contacts().get(pre);
-    console.log(`Holder: ${JSON.stringify(holder, null, 2)}`);
+    console.log(`session: ${JSON.stringify(holder, null, 2)}`);
 
     // TODO: Important!! getHolders(..)同様に、ここでStatusの設定を行う。
 
@@ -582,6 +589,18 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       throw new IllegalStateException(`Ipex State is invalid. ${holder.state}`);
     }
     await ipexHandler.progress(this.client, holder);
+  }
+
+  /**
+   * Generate Challenge.
+   *
+   * @returns challenge
+   */
+  public async generateChallenge(): Promise<string> {
+    const challenge = await this.client.challenges().generate(128);
+    console.log(`Challenge: ${JSON.stringify(challenge, null, 2)}`);
+    // TODO: 仮の実装。実際のSDK戻り値を確認して修正する。
+    return challenge.words[0];
   }
 
   /**

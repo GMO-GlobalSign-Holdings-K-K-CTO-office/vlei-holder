@@ -1,5 +1,14 @@
-export type PageName = "Profile" | "Session List" | "Session Detail";
-export type PagePath = "/" | "/profile" | "/session-list" | "/session-detail";
+export type PageName =
+  | "Profile"
+  | "Session List"
+  | "Session Detail"
+  | "Event History";
+export type PagePath =
+  | "/"
+  | "/profile"
+  | "/session-list"
+  | "/session-detail"
+  | "/event-history";
 
 export type ValidationRule = (v: string) => boolean | ErrorMessage;
 
