@@ -9,7 +9,7 @@
         <v-list-item-title>
           {{ session.name }}
         </v-list-item-title>
-        <v-list-item-subtitle>FooBar</v-list-item-subtitle>
+        <v-list-item-subtitle>TBD</v-list-item-subtitle>
         <template v-slot:append>
           <v-list-item-action>
             <v-btn

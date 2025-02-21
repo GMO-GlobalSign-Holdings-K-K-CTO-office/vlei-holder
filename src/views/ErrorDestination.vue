@@ -5,7 +5,7 @@
   >
     <v-img src="/Error.png" width="30rem" />
     <v-btn class="mt-10" color="primary" variant="text" plain @click="goBack()"
-      >戻る</v-btn
+      >Go back to Start screen</v-btn
     >
   </div>
 </template>
@@ -14,6 +14,6 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 const goBack = () => {
-  router.push("/");
+  router.push("/init");
 };
 </script>

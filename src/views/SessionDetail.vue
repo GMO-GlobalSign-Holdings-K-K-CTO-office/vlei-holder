@@ -22,8 +22,8 @@
 
       <!-- Challenge Acceptance Part -->
       <challenge-acceptance-dialog
-        :contactName="contact.name"
-        :contactPre="contact.pre"
+        :contactName="contact?.name ?? 'unknown'"
+        :contactPrefix="contact?.pre ?? 'unknown'"
         @challengeAccepted="challengeAccepted"
       />
       <v-snackbar
@@ -55,15 +55,15 @@
           class="mr-3 mb-3"
           @click="generateChallenge"
         >
-          <v-icon>mdi-plus</v-icon>
+          <v-icon>mdi-format-color-text</v-icon>
         </v-btn>
       </div>
       <v-snackbar
         v-model="challengeGenSnackbar"
         color="accent"
         multi-line
-        timeout="10000"
         vertical
+        timeout="10000"
         variant="outlined"
       >
         {{ challengeWord }}
@@ -85,7 +85,7 @@
         location="center"
         color="accent"
         timeout="2000"
-        variant="outlined"
+        variant="tonal"
       >
         <div class="d-flex justify-center">Challenge Word Copied!</div>
       </v-snackbar>
@@ -147,8 +147,12 @@ const copyChallengeText = () => {
   challengeCopiedSnackbar.value = true;
 };
 
+const emit = defineEmits<{
+  (e: "pageName", pageName: string): void;
+}>();
 onMounted(async () => {
   await showDetail();
+  emit("pageName", "Session Detail");
   renderReady.value = true;
 });
 </script>

@@ -530,8 +530,8 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       throw new IllegalStateException("pre is not set.");
     }
 
-    const holder = await this.client.contacts().get(pre);
-    console.log(`session: ${JSON.stringify(holder, null, 2)}`);
+    // const contact = await this.client.contacts().get(pre);
+    // console.log(`session: ${JSON.stringify(contact, null, 2)}`);
 
     // TODO: Important!! getHolders(..)同様に、ここでStatusの設定を行う。
 
@@ -600,7 +600,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const challenge = await this.client.challenges().generate(128);
     console.log(`Challenge: ${JSON.stringify(challenge, null, 2)}`);
     // TODO: 仮の実装。実際のSDK戻り値を確認して修正する。
-    return challenge.words[0];
+    return challenge.words.toString();
   }
 
   /**
@@ -648,10 +648,22 @@ export type RotationHistory = {
 
 export type KeyEvent = {
   ked: {
+    // Public Key List
     k: string[];
+    // Sequence
     s: string;
+    // Key Event Type
+    t: KeyEventType;
   };
 };
+
+export type KeyEventType =
+  // inception
+  | "icp"
+  // interaction
+  | "ixn"
+  // rotation
+  | "rot";
 
 // TODO: 仮の型定義。実際のSDK戻り値を確認して修正する。
 export type Contact = {

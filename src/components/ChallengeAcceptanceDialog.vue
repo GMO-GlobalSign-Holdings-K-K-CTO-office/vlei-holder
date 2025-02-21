@@ -14,7 +14,7 @@
           color="accent"
           class="mr-3 mb-3"
         >
-          <v-icon>mdi-plus</v-icon>
+          <v-icon>mdi-import</v-icon>
         </v-btn>
       </div>
     </template>
@@ -91,7 +91,7 @@ const emit = defineEmits<{
   (e: "challengeAccepted"): void;
 }>();
 
-defineProps({
+const props = defineProps({
   contactName: {
     type: String,
     required: true,
@@ -109,8 +109,8 @@ const acceptChallenge = async () => {
     const repository = await Signifies.getInstance();
     const contact: Contact = {
       challenge: [uiState.challenge as string],
-      name: contactName,
-      pre: contactPrefix,
+      name: props.contactName,
+      pre: props.contactPrefix,
       state: "2_1_challenge_received",
     };
     await repository.progressIpex(contact);
@@ -125,7 +125,7 @@ const acceptChallenge = async () => {
 <style scoped>
 .float-button-wrapper {
   width: 5vw;
-  left: 95vw;
+  left: 90vw;
   height: 5vh;
   top: 95vh;
   position: fixed;

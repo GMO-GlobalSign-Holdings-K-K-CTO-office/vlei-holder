@@ -71,7 +71,7 @@
       location="center"
       color="accent"
       timeout="2000"
-      variant="outlined"
+      variant="tonal"
     >
       <div class="d-flex justify-center">Invitation Copied!</div>
     </v-snackbar>
