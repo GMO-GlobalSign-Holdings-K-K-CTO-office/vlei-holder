@@ -569,7 +569,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     await this.client.operations().wait(resolveOp);
     await this.client.operations().delete(resolveOp.name);
 
-    // TODO: ここOOBI呼び出すべきか？
     return {
       // TODO: oobiから取得できるかもしれない。確認して修正する。
       pre: resolveResult.pre,
