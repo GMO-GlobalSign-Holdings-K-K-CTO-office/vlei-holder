@@ -90,7 +90,7 @@ export class MyResponseSender implements OobiIpexHandler {
 // IPEX Part
 export class CredentialAccepter implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
-    console.log("IssuerAdmitter started.");
+    console.log("CredentialAccepter started.");
 
     if (!issuer.notification) {
       throw new IllegalStateException("Notification not found.");
@@ -117,7 +117,7 @@ export class CredentialAccepter implements OobiIpexHandler {
     await client.notifications().mark(issuer.notification.i);
     await client.notifications().delete(issuer.notification.i);
 
-    console.log("IssuerAdmitter finished.");
+    console.log("CredentialAccepter finished.");
   }
 }
 

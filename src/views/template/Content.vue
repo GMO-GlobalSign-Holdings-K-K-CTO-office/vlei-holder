@@ -124,7 +124,7 @@ const getOobi = async () => {
   oobiLoader.value = false;
 
   // for debugging purpose only
-  repository.inspect();
+  // repository.inspect();
 };
 
 const oobiCopiedSnackbar = ref(false);

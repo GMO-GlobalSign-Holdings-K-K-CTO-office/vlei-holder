@@ -3,9 +3,11 @@ import App from "./App.vue";
 import router from "./router";
 
 // Vuetify
-
 import "@mdi/font/css/materialdesignicons.css";
 import { registerPlugins } from "./plugins";
+
+import { Buffer } from "buffer";
+window.Buffer = Buffer;
 
 const app = createApp(App);
 registerPlugins(app);

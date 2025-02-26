@@ -102,7 +102,7 @@ const init = async () => {
     await signifyRepository.importVcSchema();
 
     // for development purpose
-    await signifyRepository.inspect();
+    // await signifyRepository.inspect();
   }
 
   router.push("/");

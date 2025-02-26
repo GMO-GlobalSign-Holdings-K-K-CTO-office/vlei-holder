@@ -43,7 +43,7 @@ const showProfile = async () => {
   profile.value = await repository.getProfile();
 
   // for debugging purpose only
-  await repository.inspect();
+  // await repository.inspect();
 };
 
 const emit = defineEmits<{
