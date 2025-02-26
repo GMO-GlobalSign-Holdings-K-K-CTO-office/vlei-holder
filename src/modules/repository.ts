@@ -569,6 +569,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     await this.client.operations().wait(resolveOp);
     await this.client.operations().delete(resolveOp.name);
 
+    // TODO: ここOOBI呼び出すべきか？
     return {
       // TODO: oobiから取得できるかもしれない。確認して修正する。
       pre: resolveResult.pre,
@@ -614,19 +615,19 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const states = await this.client.state();
     console.log(`states: ${JSON.stringify(states, null, 2)}`);
 
-    const keyStates = await this.client.keyStates();
+    const keyStates = this.client.keyStates();
     console.log(`keyStates: ${JSON.stringify(keyStates, null, 2)}`);
 
-    const operation = await this.client.operations();
+    const operation = this.client.operations();
     console.log(`operation: ${JSON.stringify(operation, null, 2)}`);
 
-    const notification = await this.client.notifications();
+    const notification = this.client.notifications();
     console.log(`notification: ${JSON.stringify(notification, null, 2)}`);
 
-    const exchanges = await this.client.exchanges();
+    const exchanges = this.client.exchanges();
     console.log(`exchanges: ${JSON.stringify(exchanges, null, 2)}`);
 
-    const registries = await this.client.registries();
+    const registries = this.client.registries();
     console.log(`registries: ${JSON.stringify(registries, null, 2)}`);
 
     console.log("inspect finished");
