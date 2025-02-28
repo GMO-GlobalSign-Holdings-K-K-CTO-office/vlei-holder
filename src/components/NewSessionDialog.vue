@@ -31,7 +31,7 @@
         <v-row>
           <v-card class="mx-auto my-2" variant="flat" style="width: 50vw">
             <v-card-subtitle class="mt-3"
-              >Please Input Invitation</v-card-subtitle
+              >Please Input OOBI URL</v-card-subtitle
             >
             <v-spacer></v-spacer>
             <v-form ref="sessionRegisterForm" class="px-4 py-2">

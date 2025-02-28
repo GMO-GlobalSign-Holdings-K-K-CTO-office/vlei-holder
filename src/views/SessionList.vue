@@ -126,7 +126,7 @@ const showSessions = async () => {
   sessions.value = await repository.getSessions();
 
   // for debugging purpose only
-  repository.inspect();
+  // repository.inspect();
 };
 
 const router = useRouter();
@@ -147,7 +147,7 @@ const progressIpex = async (holder: Contact) => {
   noticeAfterIpex.value = true;
 
   // for debugging purpose only
-  repository.inspect();
+  // repository.inspect();
 };
 
 const noticeAfterSessionStarted = ref(false);

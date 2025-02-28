@@ -106,7 +106,6 @@ import ChallengeAcceptanceDialog from "@/components/ChallengeAcceptanceDialog.vu
 
 const renderReady = ref(false);
 const contact: Ref<Contact | null> = ref(null);
-const challengeAcceptedSnackbar = ref(false);
 
 const route = useRoute();
 
@@ -121,10 +120,11 @@ const showDetail = async () => {
   }
 
   // for debugging purpose only
-  await repository.inspect();
+  // await repository.inspect();
 };
 
 // Challenge Acceptance Part
+const challengeAcceptedSnackbar = ref(false);
 const challengeAccepted = async () => {
   renderReady.value = false;
   await showDetail();
@@ -150,6 +150,7 @@ const copyChallengeText = () => {
 const emit = defineEmits<{
   (e: "pageName", pageName: string): void;
 }>();
+
 onMounted(async () => {
   await showDetail();
   emit("pageName", "Session Detail");

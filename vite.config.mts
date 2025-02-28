@@ -46,9 +46,9 @@ export default defineConfig({
       vueTemplate: true,
     }),
   ],
-  optimizeDeps: {
-    include: ["buffer"],
-  },
+  // optimizeDeps: {
+  //   include: ["buffer"],
+  // },
   define: { "process.env": process.env, global: {} },
   resolve: {
     alias: {

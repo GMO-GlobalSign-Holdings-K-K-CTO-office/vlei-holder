@@ -15,7 +15,6 @@ export interface OobiIpexHandler {
 
 // export class MyChallengeSender implements OobiIpexHandler {
 //   async progress(client: SignifyClient, issuer: Contact) {
-//     console.log("ChallengeSender started.");
 
 //     // チャレンジ送信専用のメソッドがclientにない。
 //     // とりあえずlow-levelなexchangeを使って、チャレンジを送信するが、ここはGLEIFに問い合わせる。
@@ -45,8 +44,6 @@ export interface OobiIpexHandler {
 
 export class YourResponseValidator implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
-    console.log("ChallengeResponseValidator started.");
-
     const challengeWord = sessionStorage.getItem(`challenge-${issuer.pre}`);
     if (!challengeWord) {
       throw new Error("Challenge not found.");
@@ -70,28 +67,21 @@ export class YourResponseValidator implements OobiIpexHandler {
     const resp = await client.challenges().responded(issuer.pre, serder.ked.d);
 
     console.log(`Responsed Resp: ${JSON.stringify(resp, null, 2)}`);
-    console.log("ChallengeResponseValidator finished.");
   }
 }
 
 export class MyResponseSender implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
-    console.log("ResponseSender started.");
-
     const response = await client
       .challenges()
       .respond("aid", issuer.pre, issuer.challenge);
     console.log(`Response Sent: ${JSON.stringify(response, null, 2)}`);
-
-    console.log("ResponseSender finished.");
   }
 }
 
 // IPEX Part
 export class CredentialAccepter implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
-    console.log("CredentialAccepter started.");
-
     if (!issuer.notification) {
       throw new IllegalStateException("Notification not found.");
     }

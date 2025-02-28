@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
     "baseUrl": ".",
-    "target": "ESNext",
+    "target": "ES2022",
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "Node",

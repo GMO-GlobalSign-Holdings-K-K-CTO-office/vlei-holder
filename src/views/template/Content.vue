@@ -14,7 +14,7 @@
         class="text-white mx-3"
         variant="outlined"
         @click="getOobi"
-        >Get Invitation</v-btn
+        >Get OOBI URL</v-btn
       >
       <!-- Left Paneに移行 -->
       <!-- <v-btn

@@ -35,7 +35,7 @@
           v-model="noticeAfterKeyRotation"
           centered
           variant="tonal"
-          location="center"
+          location="top left"
           close-on-content-click
           color="primary"
         >
@@ -84,7 +84,7 @@ const showEventHistory = async () => {
   eventHistory.value = await repository.getEventHistory();
 
   // for debugging purpose only
-  await repository.inspect();
+  // await repository.inspect();
 };
 
 const noticeAfterKeyRotation = ref(false);
