@@ -20,7 +20,7 @@
     </template>
     <v-card>
       <v-toolbar color="accent" clipped-right>
-        <v-app-bar-title class="white--text">Start Session</v-app-bar-title>
+        <v-app-bar-title class="white--text">Register Issuer</v-app-bar-title>
         <v-spacer></v-spacer>
         <v-btn icon @click="closeDialog">
           <v-icon>mdi-close</v-icon>
@@ -34,7 +34,7 @@
               >Please Input OOBI URL</v-card-subtitle
             >
             <v-spacer></v-spacer>
-            <v-form ref="sessionRegisterForm" class="px-4 py-2">
+            <v-form ref="issuerRegisterForm" class="px-4 py-2">
               <v-text-field
                 prepend-icon="mdi-pencil"
                 color="accent"
@@ -61,7 +61,7 @@
                 class="white--text"
                 color="accent"
                 variant="outlined"
-                @click="registersession()"
+                @click="registerIssuer()"
               >
                 Start
               </v-btn>
@@ -76,7 +76,7 @@
 import { ref, reactive, type Ref } from "vue";
 import { Signifies } from "@/modules/repository";
 
-const sessionRegisterForm: Ref<any> = ref(null);
+const issuerRegisterForm: Ref<any> = ref(null);
 const uiState: {
   dialog: boolean;
   loader: boolean;
@@ -98,23 +98,23 @@ const closeDialog = () => {
 };
 
 const emit = defineEmits<{
-  (e: "sessionStarted"): void;
+  (e: "issuerRegistered"): void;
 }>();
 
-const registersession = async () => {
-  if ((await sessionRegisterForm.value.validate()).valid) {
+const registerIssuer = async () => {
+  if ((await issuerRegisterForm.value.validate()).valid) {
     uiState.loader = true;
 
     const oobi = uiState.oobi as string;
     const lei = uiState.lei as string;
 
     const repository = await Signifies.getInstance();
-    await repository.addSession(oobi, lei);
+    await repository.addIssuer(oobi, lei);
 
     uiState.loader = false;
     uiState.dialog = false;
 
-    emit("sessionStarted");
+    emit("issuerRegistered");
   }
 };
 </script>

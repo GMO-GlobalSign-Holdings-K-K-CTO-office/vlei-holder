@@ -3,11 +3,11 @@
     <v-list>
       <v-list-item
         class="my-2"
-        v-for="(session, i) in sessions"
+        v-for="(issuer, i) in issuers"
         :key="`list-${i}`"
       >
         <v-list-item-title>
-          {{ session.name }}
+          {{ issuer.name }}
         </v-list-item-title>
         <v-list-item-subtitle>TBD</v-list-item-subtitle>
         <template v-slot:append>
@@ -15,7 +15,7 @@
             <v-btn
               variant="outlined"
               color="secondary"
-              @click="navigateToSessionDetail(session.pre)"
+              @click="navigateToIssuerDetail(issuer.pre)"
               >Detail</v-btn
             >
           </v-list-item-action>
@@ -23,10 +23,10 @@
             <v-btn
               variant="outlined"
               color="accent"
-              :disabled="!canIpexStateProceed(session.state)"
+              :disabled="!canIpexStateProceed(issuer.state)"
               :loading="ipexProgressing"
-              @click="progressIpex(session)"
-              >{{ oobiIpexButtonTextMap.get(session.state) }}</v-btn
+              @click="progressIpex(issuer)"
+              >{{ oobiIpexButtonTextMap.get(issuer.state) }}</v-btn
             >
           </v-list-item-action>
 
@@ -70,7 +70,7 @@
         <v-divider class="mt-2"></v-divider>
       </v-list-item>
     </v-list>
-    <new-session-dialog @sessionStarted="sessionStarted" />
+    <issuer-register-dialog @issuerRegistered="issuerRegistered" />
     <v-snackbar
       :timeout="2000"
       v-model="noticeAfterIpex"
@@ -84,7 +84,7 @@
     </v-snackbar>
     <v-snackbar
       :timeout="2000"
-      v-model="noticeAfterSessionStarted"
+      v-model="noticeAfterIssuerRegistered"
       centered
       variant="tonal"
       location="center"
@@ -105,7 +105,7 @@
 import { Signifies, type Contact } from "@/modules/repository";
 import { ref, onMounted, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import NewSessionDialog from "@/components/NewSessionDialog.vue";
+import IssuerRegisterDialog from "@/components/IssuerRegisterDialog.vue";
 import { OobiIpexState } from "@/modules/oobi-ipex";
 
 const renderReady = ref(false);
@@ -115,23 +115,23 @@ const emit = defineEmits<{
 }>();
 
 onMounted(async () => {
-  await showSessions();
-  emit("pageName", "Session List");
+  await showIssuers();
+  emit("pageName", "Issuer List");
   renderReady.value = true;
 });
 
-const sessions: Ref<Contact[]> = ref([]);
-const showSessions = async () => {
+const issuers: Ref<Contact[]> = ref([]);
+const showIssuers = async () => {
   const repository = await Signifies.getInstance();
-  sessions.value = await repository.getSessions();
+  issuers.value = await repository.getIssuers();
 
   // for debugging purpose only
   // repository.inspect();
 };
 
 const router = useRouter();
-const navigateToSessionDetail = async (pre: string) => {
-  router.push({ name: "SessionDetail", params: { pre } });
+const navigateToIssuerDetail = async (pre: string) => {
+  router.push({ name: "IssuerDetail", params: { pre } });
 };
 
 const noticeAfterIpex = ref(false);
@@ -142,19 +142,16 @@ const progressIpex = async (holder: Contact) => {
   const repository = await Signifies.getInstance();
   await repository.progressIpex(holder);
 
-  await showSessions();
+  await showIssuers();
   ipexProgressing.value = false;
   noticeAfterIpex.value = true;
-
-  // for debugging purpose only
-  // repository.inspect();
 };
 
-const noticeAfterSessionStarted = ref(false);
+const noticeAfterIssuerRegistered = ref(false);
 const MESSAGE_ON_HOLDER_REGISTERED = "New holder registered.";
-const sessionStarted = async () => {
-  noticeAfterSessionStarted.value = true;
-  await showSessions();
+const issuerRegistered = async () => {
+  noticeAfterIssuerRegistered.value = true;
+  await showIssuers();
 };
 
 const oobiIpexButtonTextMap: Map<OobiIpexState, string> = new Map();

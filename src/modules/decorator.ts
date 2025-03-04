@@ -14,9 +14,17 @@ export function LogMethod<T extends (...args: any[]) => any>(
     this: ThisParameterType<T>,
     ...args: Parameters<T>
   ): Promise<ReturnType<T>> {
-    console.log(`Calling ${String(context.name)} with arguments:`, args);
+    console.log(
+      `%cCalling method -  ${String(context.name)} with arguments:`,
+      "color:rgb(127, 174, 232)",
+      args,
+    );
     const result = await value.apply(this, args);
-    console.log(`Result from ${String(context.name)}:`, result);
+    console.log(
+      `%cReturning from method - ${String(context.name)} with result`,
+      "color:rgb(127, 174, 232)",
+      result,
+    );
     return result;
   };
 }

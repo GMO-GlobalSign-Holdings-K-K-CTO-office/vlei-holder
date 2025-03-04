@@ -208,25 +208,25 @@ export interface SignifyRepository {
   getEventHistory(): Promise<KeyEvent[]>;
 
   /**
-   * Get Holders.
+   * Get Issuers.
    */
-  getSessions(): Promise<Contact[]>;
+  getIssuers(): Promise<Contact[]>;
 
   /**
-   * Get Session.
+   * Get an issuer
    *
-   * @param pre Correspondent AID prefix
+   * @param pre issuer's AID prefix
    */
-  getSession(pre: string): Promise<Contact>;
+  getIssuer(pre: string): Promise<Contact>;
 
   /**
-   * Add Session.
+   * Add an issuer.
    *
    * @param oobi Oobi
-   * @param correspondentName Correspondent Name
-   * @returns holder
+   * @param issuerName Issuer Name
+   * @returns Issuer
    */
-  addSession(oobi: string, correspondentName: string): Promise<Contact>;
+  addIssuer(oobi: string, correspondentName: string): Promise<Contact>;
 
   /**
    * Generate Challenge.
@@ -274,8 +274,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
 
     await this.client.connect();
     console.log("signify client connected");
-
-    console.log("connectToKeriaAgent finished");
   }
 
   /**
@@ -335,7 +333,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     }
 
     console.log(`AID: ${JSON.stringify(aid, null, 2)}`);
-    console.log("createOrRetrieveAid finished");
     return aid.prefix;
   }
 
@@ -347,7 +344,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const oobi = await this.client.oobis().get(AID_NAME, KERIA_ROLE);
     console.log(JSON.stringify(oobi, null, 2));
 
-    console.log("createOobi finished");
     return oobi.oobis[0];
   }
 
@@ -365,8 +361,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     // const resolveOp = await resolveResult.op();
     // await this.client.operations().wait(resolveOp);
     // await this.client.operations().delete(resolveOp.name);
-
-    console.log("importVcSchema finished");
   }
 
   /**
@@ -402,7 +396,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       await this.client.operations().wait(registryCreationOp);
       await this.client.operations().delete(registryCreationOp.name);
     }
-    console.log("createVcRegistry finished");
   }
 
   /**
@@ -420,7 +413,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       aid: aid.prefix,
     };
 
-    console.log("getProfile finished");
     return profile;
   }
 
@@ -434,8 +426,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const rotateOp = await rotateEvent.op();
     await this.client.operations().wait(rotateOp);
     await this.client.operations().delete(rotateOp.name);
-
-    console.log("rotateKey finished");
   }
 
   /**
@@ -448,19 +438,20 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       .get(aid.prefix)) as KeyEvent[];
     console.log(`KEL: ${JSON.stringify(kel, null, 2)}`);
 
-    console.log("getEventHistory finished");
     return kel;
   }
 
   /**
-   * Get Sessions
+   * Get Issuers.
+   *
+   * @returns Issuers
    */
-  public async getSessions(): Promise<Contact[]> {
+  public async getIssuers(): Promise<Contact[]> {
     // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
     // とりあえず仮定の型でモックデータを返す。
 
-    const sessions = await this.client.contacts().list();
-    console.log(`Sessions: ${JSON.stringify(sessions, null, 2)}`);
+    const issuers = await this.client.contacts().list();
+    console.log(`Issuers: ${JSON.stringify(issuers, null, 2)}`);
 
     // TODO: Important!! ここでStatusの設定を行う。(1)
 
@@ -506,11 +497,11 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   }
 
   /**
-   * Get Holder.
+   * Get an issuer
    *
-   * @param pre AID prefix
+   * @param pre issuer's AID prefix
    */
-  public async getSession(pre: string): Promise<Contact> {
+  public async getIssuer(pre: string): Promise<Contact> {
     // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
     // とりあえず仮定の型でモックデータを返す。
     if (!pre) {
@@ -531,28 +522,24 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   }
 
   /**
-   * add session.
+   * add an issuer.
    *
    * @param oobi Oobi
-   * @param holderName Holder Name
-   * @returns holder
+   * @param issuerName Issuer Name
+   * @returns Issuer
    */
-  public async addSession(
-    oobi: string,
-    coorespondentName: string,
-  ): Promise<Contact> {
-    if (!oobi || !coorespondentName) {
+  public async addIssuer(oobi: string, issuerName: string): Promise<Contact> {
+    if (!oobi || !issuerName) {
       throw new IllegalArgumentException("oobi or holderName is not set.");
     }
 
-    const resolveResult = await this.client
-      .oobis()
-      .resolve(oobi, coorespondentName);
+    const resolveResult = await this.client.oobis().resolve(oobi, issuerName);
     console.log(
       `Oobi Resolution Result: ${JSON.stringify(resolveResult, null, 2)}`,
     );
 
-    const resolveOp = await resolveResult.op();
+    const resolveOp = await this.client.operations().get(resolveResult.name);
+    console.log(`Resolve Operation: ${JSON.stringify(resolveOp, null, 2)}`);
     await this.client.operations().wait(resolveOp);
     await this.client.operations().delete(resolveOp.name);
 
@@ -560,7 +547,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       // TODO: oobiから取得できるかもしれない。確認して修正する。
       pre: resolveResult.pre,
       state: "1_init",
-      name: coorespondentName,
+      name: issuerName,
       challenge: ["challenge1", "challenge2"],
     };
   }
@@ -613,8 +600,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
 
     const registries = this.client.registries();
     console.log(`registries: ${JSON.stringify(registries, null, 2)}`);
-
-    console.log("inspect finished");
   }
 }
 

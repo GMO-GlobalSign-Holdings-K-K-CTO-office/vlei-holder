@@ -115,8 +115,8 @@ const showDetail = async () => {
   if (Array.isArray(correspondentPrefix)) {
     throw new Error("Invalid pre");
   } else {
-    contact.value = await repository.getSession(correspondentPrefix);
-    console.log(`Session: ${JSON.stringify(contact.value, null, 2)}`);
+    contact.value = await repository.getIssuer(correspondentPrefix);
+    console.log(`Issuer: ${JSON.stringify(contact.value, null, 2)}`);
   }
 
   // for debugging purpose only
@@ -153,7 +153,7 @@ const emit = defineEmits<{
 
 onMounted(async () => {
   await showDetail();
-  emit("pageName", "Session Detail");
+  emit("pageName", "Issuer Detail");
   renderReady.value = true;
 });
 </script>

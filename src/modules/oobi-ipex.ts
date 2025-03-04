@@ -2,6 +2,7 @@ import { SignifyClient, Serder, IpexAdmitArgs } from "signify-ts";
 import { Contact } from "@/modules/repository";
 import { IllegalStateException } from "@/modules/exception";
 import { AidName } from "./const";
+import { LogAllMethods } from "./decorator";
 
 export interface OobiIpexHandler {
   progress(client: SignifyClient, issuer: Contact): Promise<void>;
@@ -38,10 +39,10 @@ export interface OobiIpexHandler {
 //         [issuer.pre],
 //       );
 //     console.log(`Challenge Sent: ${JSON.stringify(resp, null, 2)}`);
-//     console.log("ChallengeSender finished.");
 //   }
 // }
 
+@LogAllMethods
 export class YourResponseValidator implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
     const challengeWord = sessionStorage.getItem(`challenge-${issuer.pre}`);
@@ -70,6 +71,7 @@ export class YourResponseValidator implements OobiIpexHandler {
   }
 }
 
+@LogAllMethods
 export class MyResponseSender implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
     const response = await client
@@ -80,6 +82,7 @@ export class MyResponseSender implements OobiIpexHandler {
 }
 
 // IPEX Part
+@LogAllMethods
 export class CredentialAccepter implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: Contact) {
     if (!issuer.notification) {
@@ -106,8 +109,6 @@ export class CredentialAccepter implements OobiIpexHandler {
     await client.operations().delete(admitOperation.name);
     await client.notifications().mark(issuer.notification.i);
     await client.notifications().delete(issuer.notification.i);
-
-    console.log("CredentialAccepter finished.");
   }
 }
 

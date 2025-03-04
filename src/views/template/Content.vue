@@ -95,7 +95,7 @@ onMounted(async () => {
 
 // Menu Section (Left Side)
 const menusRaw: { icon: string; text: PageName; to: PagePath }[] = [
-  { icon: "mdi-list-box", text: "Session List", to: "/session-list" },
+  { icon: "mdi-list-box", text: "Issuer List", to: "/issuer-list" },
   { icon: "mdi-account", text: "Profile", to: "/profile" },
   { icon: "mdi-history", text: "Event History", to: "/event-history" },
 ];
