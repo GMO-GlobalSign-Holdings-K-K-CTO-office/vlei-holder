@@ -7,15 +7,16 @@
         :key="`list-${i}`"
       >
         <v-list-item-title>
-          {{ issuer.name }}
+          {{ issuer.alias }}
         </v-list-item-title>
-        <v-list-item-subtitle>TBD</v-list-item-subtitle>
+        <v-list-item-subtitle> {{ issuer.id }}</v-list-item-subtitle>
         <template v-slot:append>
-          <v-list-item-action>
+          <v-chip color="primary">{{ formatState(issuer.state) }}</v-chip>
+          <v-list-item-action class="ml-3">
             <v-btn
+              color="accent"
               variant="outlined"
-              color="secondary"
-              @click="navigateToIssuerDetail(issuer.pre)"
+              @click="navigateToIssuerDetail(issuer)"
               >Detail</v-btn
             >
           </v-list-item-action>
@@ -102,11 +103,12 @@
   </template>
 </template>
 <script setup lang="ts">
-import { Signifies, type Contact } from "@/modules/repository";
+import { Signifies } from "@/modules/repository";
 import { ref, onMounted, type Ref } from "vue";
 import { useRouter } from "vue-router";
 import IssuerRegisterDialog from "@/components/IssuerRegisterDialog.vue";
-import { OobiIpexState } from "@/modules/oobi-ipex";
+import { type OobiIpexState, formatState } from "@/modules/oobi-ipex";
+import { ExtendedContact } from "@/modules/repository";
 
 const renderReady = ref(false);
 
@@ -120,7 +122,7 @@ onMounted(async () => {
   renderReady.value = true;
 });
 
-const issuers: Ref<Contact[]> = ref([]);
+const issuers: Ref<ExtendedContact[]> = ref([]);
 const showIssuers = async () => {
   const repository = await Signifies.getInstance();
   issuers.value = await repository.getIssuers();
@@ -130,14 +132,17 @@ const showIssuers = async () => {
 };
 
 const router = useRouter();
-const navigateToIssuerDetail = async (pre: string) => {
-  router.push({ name: "IssuerDetail", params: { pre } });
+const navigateToIssuerDetail = async (issuer: ExtendedContact) => {
+  router.push({
+    name: "IssuerDetail",
+    params: { aid: issuer.id },
+  });
 };
 
 const noticeAfterIpex = ref(false);
 const ipexProgressing = ref(false);
 const MESSAGE_ON_IPEX_PROGRESS = "Done processing.";
-const progressIpex = async (holder: Contact) => {
+const progressIpex = async (holder: ExtendedContact) => {
   ipexProgressing.value = true;
   const repository = await Signifies.getInstance();
   await repository.progressIpex(holder);

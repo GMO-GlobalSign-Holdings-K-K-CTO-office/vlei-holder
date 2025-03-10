@@ -5,16 +5,23 @@
         <v-table class="elevation-2" style="width: 50%">
           <thead>
             <tr>
-              <th class="text-left">Item</th>
-              <th class="text-left">Value</th>
+              <th class="text-left text-secondary">Item</th>
+              <th class="text-left text-secondary">Value</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(value, key) in contact" :key="key">
-              <td>{{ key }}</td>
-              <td>
-                {{ value }}
-              </td>
+              <template v-if="key !== 'challenges'">
+                <td>{{ key }}</td>
+                <td>
+                  <template v-if="key === 'state'">
+                    {{ formatState(value as OobiIpexState) }}
+                  </template>
+                  <template v-else>
+                    {{ value }}
+                  </template>
+                </td>
+              </template>
             </tr>
           </tbody>
         </v-table>
@@ -22,28 +29,19 @@
 
       <!-- Challenge Acceptance Part -->
       <challenge-acceptance-dialog
-        :contactName="contact?.name ?? 'unknown'"
-        :contactPrefix="contact?.pre ?? 'unknown'"
+        :contact="contact"
         @challengeAccepted="challengeAccepted"
       />
       <v-snackbar
         v-model="challengeAcceptedSnackbar"
+        close-on-content-click
         color="accent"
-        multi-line
         timeout="2000"
-        vertical
-        variant="outlined"
+        variant="tonal"
       >
-        Challenge Accepted!
-        <template v-slot:actions>
-          <v-btn
-            color="accent"
-            variant="text"
-            @click="challengeAcceptedSnackbar = false"
-          >
-            Close
-          </v-btn>
-        </template>
+        <div class="d-flex justify-center">
+          Challenge Accepted & Response Sent!
+        </div>
       </v-snackbar>
 
       <!-- Challenge Generation Part -->
@@ -101,21 +99,23 @@
 <script setup lang="ts">
 import { onMounted, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
-import { Signifies, type Contact } from "@/modules/repository";
+import { Signifies, type ExtendedContact } from "@/modules/repository";
+import { formatState, type OobiIpexState } from "@/modules/oobi-ipex";
 import ChallengeAcceptanceDialog from "@/components/ChallengeAcceptanceDialog.vue";
 
 const renderReady = ref(false);
-const contact: Ref<Contact | null> = ref(null);
+const contact: Ref<ExtendedContact | null> = ref(null);
 
 const route = useRoute();
 
 const showDetail = async () => {
-  const repository = await Signifies.getInstance();
-  const correspondentPrefix = route.params.pre;
-  if (Array.isArray(correspondentPrefix)) {
-    throw new Error("Invalid pre");
+  const aid = route.params.aid;
+
+  if (Array.isArray(aid)) {
+    throw new Error("Invalid AID");
   } else {
-    contact.value = await repository.getIssuer(correspondentPrefix);
+    const repository = await Signifies.getInstance();
+    contact.value = await repository.getIssuer(aid);
     console.log(`Issuer: ${JSON.stringify(contact.value, null, 2)}`);
   }
 
@@ -129,6 +129,7 @@ const challengeAccepted = async () => {
   renderReady.value = false;
   await showDetail();
   renderReady.value = true;
+  challengeAcceptedSnackbar.value = true;
 };
 
 // Challenge Generation Part

@@ -5,6 +5,7 @@ import {
   Tier,
   CreateIdentiferArgs,
   HabState,
+  Contact,
 } from "signify-ts";
 import {
   IllegalArgumentException,
@@ -25,6 +26,7 @@ import {
   VLEI_REGISTRY_NAME,
 } from "@/modules/const";
 import { LogAllMethods } from "./decorator";
+
 /**
  * A companion class for the SignifyRepository interface,
  * providing factory methods and more.
@@ -157,6 +159,37 @@ export class Signifies {
   private static getMasterSecret = (): string | null => {
     return sessionStorage.getItem("masterSecret");
   };
+
+  /**
+   * Get the Ipex State.
+   * @returns Ipex State
+   */
+  static getIpexState = (holderAid: string): OobiIpexState => {
+    // TODO: ここの実装が1つキモになる。
+    // とりあえず仮の実装として、localStorageを使うが、
+    // App Backendから取得するのか、またはAgentから取得するのか
+    // このままでいいのか、検討が必要。
+    const state = localStorage.getItem(`IpexState + ${holderAid}`);
+    if (!state) {
+      throw new IllegalStateException("Ipex State is not set.");
+    }
+    return state as OobiIpexState;
+  };
+
+  /**
+   * Set the Ipex State.
+   *
+   * @param state
+   * @param holderAid
+   */
+  static setIpexState = (state: OobiIpexState, holderAid: string): void => {
+    // TODO: ここの実装が1つキモになる。
+    // とりあえず仮の実装として、localStorageを使うが、
+    // App Backendから取得するのか、またはAgentから取得するのか
+    // このままでいいのか、検討が必要。
+
+    localStorage.setItem(`IpexState + ${holderAid}`, state);
+  };
 }
 
 /**
@@ -210,14 +243,14 @@ export interface SignifyRepository {
   /**
    * Get Issuers.
    */
-  getIssuers(): Promise<Contact[]>;
+  getIssuers(): Promise<ExtendedContact[]>;
 
   /**
    * Get an issuer
    *
    * @param pre issuer's AID prefix
    */
-  getIssuer(pre: string): Promise<Contact>;
+  getIssuer(pre: string): Promise<ExtendedContact>;
 
   /**
    * Add an issuer.
@@ -226,7 +259,7 @@ export interface SignifyRepository {
    * @param issuerName Issuer Name
    * @returns Issuer
    */
-  addIssuer(oobi: string, correspondentName: string): Promise<Contact>;
+  addIssuer(oobi: string, correspondentName: string): Promise<void>;
 
   /**
    * Generate Challenge.
@@ -240,7 +273,7 @@ export interface SignifyRepository {
    *
    * @param correspondent
    */
-  progressIpex(correspondent: Contact): Promise<void>;
+  progressIpex(correspondent: ExtendedContact): Promise<void>;
 
   /**
    * This method is for development only.
@@ -290,18 +323,18 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     }
 
     if (!aid) {
-      // const inceptionEventArgs: CreateIdentiferArgs = {
-      //   toad: 0,
-      // };
+      const inceptionEventArgs: CreateIdentiferArgs = {
+        toad: 0,
+      };
 
-      const inceptionEventArgs: CreateIdentiferArgs = {};
-      const witsAids = import.meta.env.VITE_WITNESS_AIDS;
-      if (witsAids) {
-        inceptionEventArgs.wits = [...witsAids.split(",")];
-        inceptionEventArgs.toad = 1;
-      } else {
-        throw new IllegalStateException("WITNESS_AIDS is not set.");
-      }
+      // const inceptionEventArgs: CreateIdentiferArgs = {};
+      // const witsAids = import.meta.env.VITE_WITNESS_AIDS;
+      // if (witsAids) {
+      //   inceptionEventArgs.wits = [...witsAids.split(",")];
+      //   inceptionEventArgs.toad = 1;
+      // } else {
+      //   throw new IllegalStateException("WITNESS_AIDS is not set.");
+      // }
 
       const inceptionEvent = await this.client
         .identifiers()
@@ -343,7 +376,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   public async createOobi(): Promise<string> {
     const oobi = await this.client.oobis().get(AID_NAME, KERIA_ROLE);
     console.log(JSON.stringify(oobi, null, 2));
-
     return oobi.oobis[0];
   }
 
@@ -446,21 +478,24 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    *
    * @returns Issuers
    */
-  public async getIssuers(): Promise<Contact[]> {
-    // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
-    // とりあえず仮定の型でモックデータを返す。
-
+  public async getIssuers(): Promise<ExtendedContact[]> {
     const issuers = await this.client.contacts().list();
     console.log(`Issuers: ${JSON.stringify(issuers, null, 2)}`);
 
-    // TODO: Important!! ここでStatusの設定を行う。(1)
+    const extendedIssuers = issuers.map((issuer) => {
+      const ipexState = Signifies.getIpexState(issuer.id);
+
+      return {
+        ...issuer,
+        state: ipexState,
+        // TODO: key存在の確認とType Guard実行
+        challenges: issuer.challenges as string[],
+      };
+    });
+
+    return extendedIssuers;
 
     // TODO: **Notification**の取得
-    // (1)-a.Your Challengeの取得を行う。
-    //    Statusの設定の中で、Challenge受信のNotification情報を取得して、存在すればStatusに2_1_challenge_receivedを設定する。
-    //    Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Responseの送信へ)
-    // 参考: github.com/WebOfTrust/signify-ts/blob/cddb00713ce7b09b3f18acdaae559703759369bc/examples/integration-scripts/utils/test-util.ts#L479
-
     // (1)-b. My ResponseのValdiate状態を取得する。
     //     Statusの設定の中で、ResponseのNotification情報を取得して、存在すればStatusに2_3_response_validatedを設定する。
     //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Challengeの送信へ)
@@ -479,46 +514,28 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     //   "/exn/ipex/grant",
     // );
     // const grantNotification = holderNotifications[0]; // should only have one notification right now
-
-    return [
-      {
-        name: "John Doe",
-        pre: "pre1",
-        state: "2_1_challenge_received",
-        challenge: ["challenge1", "challenge2"],
-      },
-      {
-        name: "Jane Doe",
-        pre: "pre2",
-        state: "2_1_challenge_received",
-        challenge: ["challenge1", "challenge2"],
-      },
-    ];
   }
 
   /**
    * Get an issuer
    *
-   * @param pre issuer's AID prefix
+   * @param prefix issuer's AID prefix
    */
-  public async getIssuer(pre: string): Promise<Contact> {
-    // TODO: Anyで帰ってきてしまっている。ログから型を特定する。
-    // とりあえず仮定の型でモックデータを返す。
+  public async getIssuer(pre: string): Promise<ExtendedContact> {
     if (!pre) {
-      throw new IllegalStateException("pre is not set.");
+      throw new IllegalStateException("aid is undefined.");
     }
 
-    // const contact = await this.client.contacts().get(pre);
-    // console.log(`session: ${JSON.stringify(contact, null, 2)}`);
+    const issuer = await this.client.contacts().get(pre);
+    console.log("Issuer:", issuer);
 
-    // TODO: Important!! getHolders(..)同様に、ここでStatusの設定を行う。
-
-    return {
-      name: "John Doe",
-      pre: "pre1",
-      state: "2_1_challenge_received",
-      challenge: ["challenge1", "challenge2"],
+    const extendedContact: ExtendedContact = {
+      ...issuer,
+      state: Signifies.getIpexState(issuer.id),
+      challenges: issuer.challenges as string[],
     };
+
+    return extendedContact;
   }
 
   /**
@@ -528,7 +545,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    * @param issuerName Issuer Name
    * @returns Issuer
    */
-  public async addIssuer(oobi: string, issuerName: string): Promise<Contact> {
+  public async addIssuer(oobi: string, issuerName: string): Promise<void> {
     if (!oobi || !issuerName) {
       throw new IllegalArgumentException("oobi or holderName is not set.");
     }
@@ -543,13 +560,18 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     await this.client.operations().wait(resolveOp);
     await this.client.operations().delete(resolveOp.name);
 
-    return {
-      // TODO: oobiから取得できるかもしれない。確認して修正する。
-      pre: resolveResult.pre,
-      state: "1_init",
-      name: issuerName,
-      challenge: ["challenge1", "challenge2"],
-    };
+    const oobiUrl = resolveResult.metadata?.oobi as string;
+    if (!oobiUrl) {
+      throw new IllegalStateException("oobiUrl is not set.");
+    }
+
+    const aidInOobi = oobiUrl.match(/oobi\/([^/]+)\/agent/);
+    console.log(`AID in Oobi: ${aidInOobi}`);
+    if (!aidInOobi) {
+      throw new IllegalStateException("oobiUrl is invalid.");
+    }
+
+    Signifies.setIpexState("1_init", aidInOobi[1]);
   }
 
   /**
@@ -557,7 +579,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    *
    * @param holder
    */
-  public async progressIpex(holder: Contact): Promise<void> {
+  public async progressIpex(holder: ExtendedContact): Promise<void> {
     const ipexHandler = this.ipexHandlers.get(holder.state);
     if (!ipexHandler) {
       throw new IllegalStateException(`Ipex State is invalid. ${holder.state}`);
@@ -635,12 +657,9 @@ export type KeyEventType =
   // rotation
   | "rot";
 
-// TODO: 仮の型定義。実際のSDK戻り値を確認して修正する。
-export type Contact = {
-  name: string; // lei
-  pre: string; // prefix
+export type ExtendedContact = Contact & {
   state: OobiIpexState;
-  challenge: string[];
+  challenges?: string[];
   notification?: AdmitNotification;
 };
 

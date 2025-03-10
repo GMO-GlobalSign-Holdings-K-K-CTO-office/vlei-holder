@@ -33,7 +33,7 @@
         <v-row>
           <v-card class="mx-auto my-2" variant="flat" style="width: 50vw">
             <v-card-subtitle class="mt-3"
-              >Please input a challenge word</v-card-subtitle
+              >Please input challenge words</v-card-subtitle
             >
             <v-spacer></v-spacer>
             <v-form ref="challengeAcceptanceForm" class="px-4 py-2">
@@ -57,7 +57,7 @@
                 variant="outlined"
                 @click="acceptChallenge()"
               >
-                Accept
+                Accept and Send Reponse
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -68,7 +68,7 @@
 </template>
 <script setup lang="ts">
 import { ref, reactive, type Ref } from "vue";
-import { Signifies, type Contact } from "@/modules/repository";
+import { Signifies, type ExtendedContact } from "@/modules/repository";
 
 const challengeAcceptanceForm: Ref<any> = ref(null);
 const uiState: {
@@ -91,29 +91,30 @@ const emit = defineEmits<{
   (e: "challengeAccepted"): void;
 }>();
 
-const props = defineProps({
-  contactName: {
-    type: String,
-    required: true,
-  },
-  contactPrefix: {
-    type: String,
-    required: true,
-  },
-});
+const props = defineProps<{ contact: ExtendedContact | null }>();
 
 const acceptChallenge = async () => {
   if ((await challengeAcceptanceForm.value.validate()).valid) {
     uiState.loader = true;
 
-    const repository = await Signifies.getInstance();
-    const contact: Contact = {
-      challenge: [uiState.challenge as string],
-      name: props.contactName,
-      pre: props.contactPrefix,
+    // stateとchallengesの更新
+    const currentContact = { ...props.contact };
+    const { id, alias, oobi } = currentContact;
+    if (!id || !alias || !oobi) {
+      throw new Error("Invalid contact");
+    }
+
+    Signifies.setIpexState("2_1_challenge_received", id);
+    const updatedContact: ExtendedContact = {
+      id,
+      alias,
+      oobi,
       state: "2_1_challenge_received",
+      challenges: [uiState.challenge as string],
     };
-    await repository.progressIpex(contact);
+
+    const repository = await Signifies.getInstance();
+    await repository.progressIpex(updatedContact);
 
     uiState.loader = false;
     uiState.dialog = false;

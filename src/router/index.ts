@@ -27,7 +27,7 @@ const router = createRouter({
           meta: { title: "Issuer List" },
         },
         {
-          path: "/issuer-detail/:pre/",
+          path: "/issuer-detail/:aid/",
           name: "IssuerDetail",
           component: IssuerDetail,
           meta: { title: "Issuer Detail" },
