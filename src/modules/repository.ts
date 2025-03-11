@@ -6,6 +6,7 @@ import {
   CreateIdentiferArgs,
   HabState,
   Contact,
+  CredentialFilter,
 } from "signify-ts";
 import {
   IllegalArgumentException,
@@ -159,37 +160,6 @@ export class Signifies {
   private static getMasterSecret = (): string | null => {
     return sessionStorage.getItem("masterSecret");
   };
-
-  /**
-   * Get the Ipex State.
-   * @returns Ipex State
-   */
-  static getIpexState = (holderAid: string): OobiIpexState => {
-    // TODO: ここの実装が1つキモになる。
-    // とりあえず仮の実装として、localStorageを使うが、
-    // App Backendから取得するのか、またはAgentから取得するのか
-    // このままでいいのか、検討が必要。
-    const state = localStorage.getItem(`IpexState + ${holderAid}`);
-    if (!state) {
-      throw new IllegalStateException("Ipex State is not set.");
-    }
-    return state as OobiIpexState;
-  };
-
-  /**
-   * Set the Ipex State.
-   *
-   * @param state
-   * @param holderAid
-   */
-  static setIpexState = (state: OobiIpexState, holderAid: string): void => {
-    // TODO: ここの実装が1つキモになる。
-    // とりあえず仮の実装として、localStorageを使うが、
-    // App Backendから取得するのか、またはAgentから取得するのか
-    // このままでいいのか、検討が必要。
-
-    localStorage.setItem(`IpexState + ${holderAid}`, state);
-  };
 }
 
 /**
@@ -274,6 +244,22 @@ export interface SignifyRepository {
    * @param correspondent
    */
   progressIpex(correspondent: ExtendedContact): Promise<void>;
+
+  /**
+   * Get the Ipex State.
+   *
+   * @param holderAid
+   * @returns Ipex State
+   */
+  getIpexState(holderAid: string): Promise<OobiIpexState>;
+
+  /**
+   * Set the Ipex State.
+   *
+   * @param state
+   * @param holderAid
+   */
+  setIpexState(state: OobiIpexState, holderAid: string): Promise<void>;
 
   /**
    * This method is for development only.
@@ -482,8 +468,8 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const issuers = await this.client.contacts().list();
     console.log(`Issuers: ${JSON.stringify(issuers, null, 2)}`);
 
-    const extendedIssuers = issuers.map((issuer) => {
-      const ipexState = Signifies.getIpexState(issuer.id);
+    const extendIssuer = async (issuer: Contact): Promise<ExtendedContact> => {
+      const ipexState = await this.getIpexState(issuer.id);
 
       return {
         ...issuer,
@@ -491,8 +477,9 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
         // TODO: key存在の確認とType Guard実行
         challenges: issuer.challenges as string[],
       };
-    });
+    };
 
+    const extendedIssuers = await Promise.all(issuers.map(extendIssuer));
     return extendedIssuers;
 
     // TODO: **Notification**の取得
@@ -531,7 +518,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
 
     const extendedContact: ExtendedContact = {
       ...issuer,
-      state: Signifies.getIpexState(issuer.id),
+      state: await this.getIpexState(issuer.id),
       challenges: issuer.challenges as string[],
     };
 
@@ -571,7 +558,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       throw new IllegalStateException("oobiUrl is invalid.");
     }
 
-    Signifies.setIpexState("1_init", aidInOobi[1]);
+    this.setIpexState("1_init", aidInOobi[1]);
   }
 
   /**
@@ -585,6 +572,63 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       throw new IllegalStateException(`Ipex State is invalid. ${holder.state}`);
     }
     await ipexHandler.progress(this.client, holder);
+  }
+
+  /**
+   * Get the Ipex State.
+   *
+   * @param holderAid
+   * @returns Ipex State
+   */
+  public async getIpexState(holderAid: string): Promise<OobiIpexState> {
+    // TODO: ここの実装が1つキモになる。
+    // とりあえず仮の実装として、localStorageを使うが、
+    // App Backendから取得するのか、またはAgentから取得するのか
+    // このままでいいのか、検討が必要。
+
+    const state = localStorage.getItem(
+      `IpexState + ${holderAid}`,
+    ) as OobiIpexState | null;
+    if (!state) {
+      throw new IllegalStateException("Ipex State is not set.");
+    }
+
+    // 参考コード
+    // https://github.com/WebOfTrust/signify-ts/blob/cddb00713ce7b09b3f18acdaae559703759369bc/examples/integration-scripts/credentials.test.ts#L251
+    if (state === "4_2_credential_accepted") {
+      const filter: CredentialFilter = {
+        filter: { "-i": holderAid },
+      };
+      const credentials = await this.client.credentials().list(filter);
+      console.log("Credentials: ", credentials);
+
+      if (Array.isArray(credentials) && credentials.length > 0) {
+        const credential = credentials[0];
+        if (credential.status.s === "1") {
+          return "5_1_credentiial_revoked";
+        }
+      }
+    }
+
+    return state;
+  }
+
+  /**
+   * Set the Ipex State.
+   *
+   * @param state
+   * @param holderAid
+   */
+  public async setIpexState(
+    state: OobiIpexState,
+    holderAid: string,
+  ): Promise<void> {
+    // TODO: ここの実装が1つキモになる。
+    // とりあえず仮の実装として、localStorageを使うが、
+    // App Backendから取得するのか、またはAgentから取得するのか
+    // このままでいいのか、検討が必要。
+
+    localStorage.setItem(`IpexState + ${holderAid}`, state);
   }
 
   /**

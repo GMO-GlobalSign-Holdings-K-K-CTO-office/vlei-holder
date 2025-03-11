@@ -1,5 +1,5 @@
 import { SignifyClient, Serder, IpexAdmitArgs } from "signify-ts";
-import { Signifies, type ExtendedContact } from "@/modules/repository";
+import { type ExtendedContact } from "@/modules/repository";
 import { IllegalStateException } from "@/modules/exception";
 import { AidName } from "./const";
 import { LogAllMethods } from "./decorator";
@@ -82,7 +82,7 @@ export class MyResponseSender implements OobiIpexHandler {
       .challenges()
       .respond("aid", issuer.id, issuer.challenges);
     console.log(`Response Sent: ${JSON.stringify(response, null, 2)}`);
-    Signifies.setIpexState("2_2_response_sent", issuer.id);
+    await client.setIpexState("2_2_response_sent", issuer.id);
   }
 }
 

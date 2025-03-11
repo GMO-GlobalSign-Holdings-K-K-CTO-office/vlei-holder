@@ -15,7 +15,10 @@ registerPlugins(app);
 
 app.config.errorHandler = (err) => {
   console.error(err);
-  router.push({ name: "ErrorDestination" });
+
+  // alert or redirect to error page
+  alert("An error occurred. Please try again later.");
+  // router.push({ name: "ErrorDestination" });
 };
 app.mount("#app");
 
