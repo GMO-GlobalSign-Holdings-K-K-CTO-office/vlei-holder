@@ -243,7 +243,7 @@ export interface SignifyRepository {
    *
    * @param correspondent
    */
-  progressIpex(correspondent: ExtendedContact): Promise<void>;
+  progressIpex(issuer: ExtendedContact): Promise<void>;
 
   /**
    * Get the Ipex State.
@@ -506,23 +506,23 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   /**
    * Get an issuer
    *
-   * @param prefix issuer's AID prefix
+   * @param aid issuer's AID prefix
    */
-  public async getIssuer(pre: string): Promise<ExtendedContact> {
-    if (!pre) {
-      throw new IllegalStateException("aid is undefined.");
+  public async getIssuer(aid: string): Promise<ExtendedContact> {
+    if (!aid) {
+      throw new IllegalStateException("AID is not set.");
     }
 
-    const issuer = await this.client.contacts().get(pre);
+    const issuer = await this.client.contacts().get(aid);
     console.log("Issuer:", issuer);
 
-    const extendedContact: ExtendedContact = {
+    const extendedIssuer: ExtendedContact = {
       ...issuer,
       state: await this.getIpexState(issuer.id),
       challenges: issuer.challenges as string[],
     };
 
-    return extendedContact;
+    return extendedIssuer;
   }
 
   /**

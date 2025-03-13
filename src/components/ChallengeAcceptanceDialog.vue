@@ -104,7 +104,9 @@ const acceptChallenge = async () => {
       throw new Error("Invalid contact");
     }
 
-    Signifies.setIpexState("2_1_challenge_received", id);
+    const repository = await Signifies.getInstance();
+    repository.setIpexState("2_1_challenge_received", id);
+
     const updatedContact: ExtendedContact = {
       id,
       alias,
@@ -112,8 +114,6 @@ const acceptChallenge = async () => {
       state: "2_1_challenge_received",
       challenges: [uiState.challenge as string],
     };
-
-    const repository = await Signifies.getInstance();
     await repository.progressIpex(updatedContact);
 
     uiState.loader = false;
