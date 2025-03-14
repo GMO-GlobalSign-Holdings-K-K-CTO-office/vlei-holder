@@ -129,19 +129,28 @@ export type OobiIpexState =
   | "3_3_response_validated" // レスポンス検証済み
   | "4_1_credential_received"
   | "4_2_credential_accepted"
-  | "5_1_credentiial_revoked";
+  | "5_1_credential_revoked";
 
 const formatStateMap: Map<OobiIpexState, string> = new Map();
 formatStateMap.set("1_init", "Init");
-formatStateMap.set("2_1_challenge_received", "Challenge Received");
-formatStateMap.set("2_2_response_sent", "Response Sent");
-formatStateMap.set("2_3_response_validated", "Response Validated");
-formatStateMap.set("3_1_challenge_sent", "Challenge Sent");
-formatStateMap.set("3_2_response_received", "Response Received");
-formatStateMap.set("3_3_response_validated", "Response Validated");
+formatStateMap.set("2_1_challenge_received", "Your Challenge Received / NONE");
+formatStateMap.set("2_2_response_sent", "My Response Sent / NONE");
+formatStateMap.set("2_3_response_validated", "My Response Validated / NONE");
+formatStateMap.set(
+  "3_1_challenge_sent",
+  "My Response Validated / My Challenge Sent",
+);
+formatStateMap.set(
+  "3_2_response_received",
+  "My Response Validated / Your Response Received",
+);
+formatStateMap.set(
+  "3_3_response_validated",
+  "My Response Validated / Your Response Validated",
+);
 formatStateMap.set("4_1_credential_received", "Credential Received");
 formatStateMap.set("4_2_credential_accepted", "Credential Accepted");
-formatStateMap.set("5_1_credentiial_revoked", "Credential Revoked");
+formatStateMap.set("5_1_credential_revoked", "Credential Revoked");
 
 export const formatState = (state: OobiIpexState) => {
   const formatted = formatStateMap.get(state);

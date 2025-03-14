@@ -35,7 +35,7 @@
           v-model="noticeAfterKeyRotation"
           centered
           variant="tonal"
-          location="top left"
+          location="bottom left"
           close-on-content-click
           color="primary"
         >

@@ -62,10 +62,9 @@
   </v-snackbar>
   <v-snackbar
     v-model="secretCopiedSnackbar"
-    location="right top"
+    location="center"
     color="accent"
     timeout="2000"
-    variant="outlined"
   >
     <div class="d-flex justify-center">Secret Copied!</div>
   </v-snackbar>

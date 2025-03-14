@@ -20,16 +20,17 @@
               >Detail</v-btn
             >
           </v-list-item-action>
-          <v-list-item-action class="ml-3">
-            <v-btn
-              variant="outlined"
-              color="accent"
-              :disabled="!canIpexStateProceed(issuer.state)"
-              :loading="ipexProgressing"
-              @click="progressIpex(issuer)"
-              >{{ oobiIpexButtonTextMap.get(issuer.state) }}</v-btn
-            >
-          </v-list-item-action>
+          <template v-if="canIpexStateProceed(issuer.state)">
+            <v-list-item-action class="ml-3">
+              <v-btn
+                variant="outlined"
+                color="accent"
+                :loading="ipexProgressing"
+                @click="progressIpex(issuer)"
+                >{{ oobiIpexButtonTextMap.get(issuer.state) }}</v-btn
+              >
+            </v-list-item-action>
+          </template>
 
           <!-- TODO: 後でprogressIpexにYes/No Dialogつける -->
           <!-- <v-list-item-action>
@@ -71,6 +72,17 @@
         <v-divider class="mt-2"></v-divider>
       </v-list-item>
     </v-list>
+    <div class="float-button-wrapper">
+      <v-btn
+        size="large"
+        icon
+        color="accent"
+        class="mr-3 mb-3"
+        @click="refreshIssuerList()"
+      >
+        <v-icon>mdi-refresh</v-icon>
+      </v-btn>
+    </div>
     <issuer-register-dialog @issuerRegistered="issuerRegistered" />
     <v-snackbar
       :timeout="2000"
@@ -92,7 +104,7 @@
       close-on-content-click
       color="primary"
     >
-      {{ MESSAGE_ON_HOLDER_REGISTERED }}
+      {{ MESSAGE_ON_ISSUER_REGISTERED }}
     </v-snackbar>
   </template>
   <template v-else>
@@ -131,6 +143,14 @@ const showIssuers = async () => {
   // repository.inspect();
 };
 
+const refreshIssuerList = async () => {
+  renderReady.value = false;
+  setTimeout(async () => {
+    await showIssuers();
+    renderReady.value = true;
+  }, 700);
+};
+
 const router = useRouter();
 const navigateToIssuerDetail = async (issuer: ExtendedContact) => {
   router.push({
@@ -142,10 +162,10 @@ const navigateToIssuerDetail = async (issuer: ExtendedContact) => {
 const noticeAfterIpex = ref(false);
 const ipexProgressing = ref(false);
 const MESSAGE_ON_IPEX_PROGRESS = "Done processing.";
-const progressIpex = async (holder: ExtendedContact) => {
+const progressIpex = async (issuer: ExtendedContact) => {
   ipexProgressing.value = true;
   const repository = await Signifies.getInstance();
-  await repository.progressIpex(holder);
+  await repository.progressIpex(issuer);
 
   await showIssuers();
   ipexProgressing.value = false;
@@ -153,25 +173,19 @@ const progressIpex = async (holder: ExtendedContact) => {
 };
 
 const noticeAfterIssuerRegistered = ref(false);
-const MESSAGE_ON_HOLDER_REGISTERED = "New holder registered.";
+const MESSAGE_ON_ISSUER_REGISTERED = "New issuer has been registered.";
 const issuerRegistered = async () => {
   noticeAfterIssuerRegistered.value = true;
   await showIssuers();
 };
 
 const oobiIpexButtonTextMap: Map<OobiIpexState, string> = new Map();
-oobiIpexButtonTextMap.set("1_init", "Init");
 oobiIpexButtonTextMap.set("2_1_challenge_received", "Send Response");
-oobiIpexButtonTextMap.set("2_2_response_sent", "Response Sent");
-oobiIpexButtonTextMap.set("2_3_response_validated", "Send Challenge");
-oobiIpexButtonTextMap.set("3_1_challenge_sent", "Challenge Sent");
 oobiIpexButtonTextMap.set("3_2_response_received", "Validate Response");
-oobiIpexButtonTextMap.set("3_3_response_validated", "Reseponse Validated");
 oobiIpexButtonTextMap.set(
   "4_1_credential_received",
   "Accept Issued Credential",
 );
-oobiIpexButtonTextMap.set("4_2_credential_accepted", "Credential Accepted");
 
 /**
  *  Check if the Ipex State can proceed.
@@ -187,4 +201,15 @@ const canIpexStateProceed = (state: OobiIpexState): boolean => {
   );
 };
 </script>
-<style scoped></style>
+<style scoped>
+.float-button-wrapper {
+  width: 5vw;
+  left: 90vw;
+  height: 5vh;
+  top: 95vh;
+  position: fixed;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+</style>
