@@ -468,6 +468,11 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const issuers = await this.client.contacts().list();
     console.log(`Issuers: ${JSON.stringify(issuers, null, 2)}`);
 
+    const notificationList = await this.client.notifications().list();
+    console.log(
+      `Notification List: ${JSON.stringify(notificationList, null, 2)}`,
+    );
+
     const extendIssuer = async (issuer: Contact): Promise<ExtendedContact> => {
       const ipexState = await this.getIpexState(issuer.id);
 
@@ -605,7 +610,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       if (Array.isArray(credentials) && credentials.length > 0) {
         const credential = credentials[0];
         if (credential.status.s === "1") {
-          return "5_1_credentiial_revoked";
+          return "5_1_credential_revoked";
         }
       }
     }
