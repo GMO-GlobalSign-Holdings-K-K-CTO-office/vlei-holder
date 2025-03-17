@@ -27,7 +27,8 @@
     </v-app-bar>
 
     <!-- Menu(Left Side) -->
-    <v-navigation-drawer v-model="navDrawn" app temporary>
+    <!-- <v-navigation-drawer v-model="navDrawn" app temporary> -->
+    <v-navigation-drawer>
       <v-list-item class="my-3">
         <v-list-item-title class="text-h6">ACDC Holder</v-list-item-title>
       </v-list-item>

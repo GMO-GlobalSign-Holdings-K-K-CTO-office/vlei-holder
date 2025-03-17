@@ -468,13 +468,23 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const issuers = await this.client.contacts().list();
     console.log(`Issuers: ${JSON.stringify(issuers, null, 2)}`);
 
+    // TODO: Temporal code for Notification
     const notificationList = await this.client.notifications().list();
     console.log(
       `Notification List: ${JSON.stringify(notificationList, null, 2)}`,
     );
 
     const extendIssuer = async (issuer: Contact): Promise<ExtendedContact> => {
-      const ipexState = await this.getIpexState(issuer.id);
+      let currentState = await this.getIpexState(issuer.id);
+
+      if (currentState === "2_3_response_validated") {
+        // TODO: key存在の確認とType Guard実行
+        const challengesInContact = issuer.challenges as any[];
+        if (challengesInContact.length > 0) {
+          currentState = "3_2_response_received";
+          await this.setIpexState(currentState, issuer.id);
+        }
+      }
 
       return {
         ...issuer,
@@ -491,10 +501,6 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     // (1)-b. My ResponseのValdiate状態を取得する。
     //     Statusの設定の中で、ResponseのNotification情報を取得して、存在すればStatusに2_3_response_validatedを設定する。
     //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Challengeの送信へ)
-
-    // (1)-c. Your Responseの取得を行う。
-    //     Statusの設定の中で、ResponseのNotification情報を取得して、存在すればStatusにresponse_receivedを設定する。
-    //     Contatに対しNotificationを設定し画面に返し、ボタンが活性化される。(Validateへ)
 
     // (1)-d. Credentialの取得を行う。
     //   Statusの設定の中で、CredentialのNotification情報を取得して、存在すればStatusに4_1_credential_receivedを設定する。
@@ -521,10 +527,13 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const issuer = await this.client.contacts().get(aid);
     console.log("Issuer:", issuer);
 
+    // TODO: key存在の確認とType Guard実行
+    const challenges = issuer.challenges as any[];
+
     const extendedIssuer: ExtendedContact = {
       ...issuer,
       state: await this.getIpexState(issuer.id),
-      challenges: issuer.challenges as string[],
+      challenges: challenges.length > 0 ? (challenges.words as string[]) : [],
     };
 
     return extendedIssuer;
