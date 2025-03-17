@@ -180,6 +180,7 @@ const issuerRegistered = async () => {
 };
 
 const oobiIpexButtonTextMap: Map<OobiIpexState, string> = new Map();
+oobiIpexButtonTextMap.set("1_init", "Challenge Sent?");
 oobiIpexButtonTextMap.set("2_1_challenge_received", "Send Response");
 oobiIpexButtonTextMap.set("3_2_response_received", "Validate Response");
 oobiIpexButtonTextMap.set(
@@ -195,6 +196,7 @@ oobiIpexButtonTextMap.set(
  */
 const canIpexStateProceed = (state: OobiIpexState): boolean => {
   return (
+    state === "1_init" ||
     state === "2_1_challenge_received" ||
     state === "3_2_response_received" ||
     state === "4_1_credential_received"

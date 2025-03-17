@@ -8,43 +8,17 @@ export interface OobiIpexHandler {
   progress(client: SignifyClient, issuer: ExtendedContact): Promise<void>;
 }
 
-// Note: 現状、各Handlerの最後に状態を遷移させてはいない。
-// フロントとAgentで二重管理にするのは避けたいので、Agent側の状態を確認して、逐次状態を反映させる。
-
-// OOBI Part
-// Important!!: Githubで聞いた結果、チャレンジはOut-of-Bandで送信するのプラクティスとのこと
-
-// export class MyChallengeSender implements OobiIpexHandler {
-//   async progress(client: SignifyClient, issuer: Contact) {
-
-//     // チャレンジ送信専用のメソッドがclientにない。
-//     // とりあえずlow-levelなexchangeを使って、チャレンジを送信するが、ここはGLEIFに問い合わせる。
-//     // Challengeをビデオチャット経由で送信してもいいのか？(そうするべきなら、Challenge生成のUIを作る。)
-//     const sender = await client.identifiers().get("aid");
-//     const challengeSmall = await client.challenges().generate(128);
-//     sessionStorage.setItem(
-//       `challenge-${issuer.pre}`,
-//       JSON.stringify(challengeSmall),
-//     );
-
-//     const resp = await client
-//       .exchanges()
-//       .send(
-//         "aid",
-//         "challenge",
-//         sender,
-//         "/challenge",
-//         { words: challengeSmall.words },
-//         {},
-//         [issuer.pre],
-//       );
-//     console.log(`Challenge Sent: ${JSON.stringify(resp, null, 2)}`);
-//   }
-// }
+export class MyChallengeSentCallback implements OobiIpexHandler {
+  async progress(client: SignifyClient, holder: ExtendedContact) {
+    const repository = await Signifies.getInstance();
+    await repository.setIpexState("3_1_challenge_sent", holder.id);
+  }
+}
 
 @LogAllMethods
 export class YourResponseValidator implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: ExtendedContact) {
+    // TODO: Signifiesに移行する。
     const challengeWord = sessionStorage.getItem(`challenge-${issuer.pre}`);
     if (!challengeWord) {
       throw new Error("Challenge not found.");
@@ -52,22 +26,37 @@ export class YourResponseValidator implements OobiIpexHandler {
 
     const verifyOperation = await client
       .challenges()
-      .verify(issuer.id, JSON.parse(challengeWord).words);
+      .verify(issuer.id, challengeWord.split(","));
     console.log(`VerifyOperation: ${JSON.stringify(verifyOperation, null, 2)}`);
 
-    await client.operations().wait(verifyOperation);
-    await client.operations().delete(verifyOperation.name);
+    // TODO: Waitが終わらない。原因調査中。
+    try {
+      await client
+        .operations()
+        .wait(verifyOperation, { signal: AbortSignal.timeout(10000) });
+      console.log("Done verify op waiting");
+      await client.operations().delete(verifyOperation.name);
+      console.log("Done verify op deleting");
 
-    type VerifyResponse = {
-      // exn = exchange
-      exn: Record<string, unknown>;
-    };
-    const verifyResponse = verifyOperation.response as VerifyResponse;
-    const serder = new Serder(verifyResponse.exn);
+      type VerifyResponse = {
+        // exn = exchange
+        exn: Record<string, unknown>;
+      };
+      const verifyResponse = verifyOperation.response as VerifyResponse;
+      const serder = new Serder(verifyResponse.exn);
 
-    const resp = await client.challenges().responded(issuer.id, serder.ked.d);
+      const resp = await client.challenges().responded(issuer.id, serder.ked.d);
 
-    console.log(`Responsed Resp: ${JSON.stringify(resp, null, 2)}`);
+      console.log(`Responsed Resp: ${JSON.stringify(resp, null, 2)}`);
+    } catch (e) {
+      console.log("Verify Operation Waitng or Deleting Error: ", e);
+      alert(
+        "Verification timeout. We're investigating the issue. Please go to the next step.",
+      );
+
+      const repository = await Signifies.getInstance();
+      await repository.setIpexState("2_3_response_validated", issuer.id);
+    }
   }
 }
 
