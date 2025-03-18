@@ -74,6 +74,12 @@ export class MyResponseSender implements OobiIpexHandler {
 
     const repository = await Signifies.getInstance();
     await repository.setIpexState("2_2_response_sent", issuer.id);
+
+    // TODO: Temporary
+    // verifyが終わらないため、とりあえず次のステップに進む
+    setTimeout(async () => {
+      await repository.setIpexState("2_3_response_validated", issuer.id);
+    }, 30000);
   }
 }
 

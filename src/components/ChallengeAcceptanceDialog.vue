@@ -126,7 +126,7 @@ const acceptChallenge = async () => {
 <style scoped>
 .float-button-wrapper {
   width: 5vw;
-  left: 90vw;
+  left: 95vw;
   height: 5vh;
   top: 95vh;
   position: fixed;

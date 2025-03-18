@@ -527,14 +527,16 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const issuer = await this.client.contacts().get(aid);
     console.log("Issuer:", issuer);
 
-    // TODO: key存在の確認とType Guard実行
-    const challenges = issuer.challenges as any[];
+    // TODO: Type Guard実行
+    const challenges = issuer.challenges as any[] | undefined;
 
     const extendedIssuer: ExtendedContact = {
       ...issuer,
       state: await this.getIpexState(issuer.id),
       challenges:
-        challenges.length > 0 ? (challenges[0].words as string[]) : [],
+        challenges && challenges.length > 0
+          ? (challenges[0].words as string[])
+          : [],
     };
 
     return extendedIssuer;

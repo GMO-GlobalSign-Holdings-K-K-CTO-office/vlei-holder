@@ -161,7 +161,7 @@ onMounted(async () => {
 <style scoped>
 .float-button-wrapper {
   width: 5vw;
-  left: 95vw;
+  left: 90vw;
   height: 5vh;
   top: 95vh;
   position: fixed;
