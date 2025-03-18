@@ -179,8 +179,8 @@ const issuerRegistered = async () => {
   await showIssuers();
 };
 
-// TODO: これとcanIpexStateProceed、formatStateMapを共通化する
-// valueの型を作る ({stateName, actionName, })
+// TODO: これとformatStateMapを共通化する
+// valueの型を作る ({stateName, actionName})
 const oobiIpexButtonTextMap: Map<OobiIpexState, string> = new Map();
 oobiIpexButtonTextMap.set("2_1_challenge_received", "Send Response");
 oobiIpexButtonTextMap.set("3_1_challenge_sent", "Challenge Sent?");

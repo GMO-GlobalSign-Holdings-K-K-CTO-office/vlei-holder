@@ -488,7 +488,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
 
       return {
         ...issuer,
-        state: ipexState,
+        state: currentState,
         // TODO: key存在の確認とType Guard実行
         challenges: issuer.challenges as string[],
       };
@@ -533,7 +533,8 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const extendedIssuer: ExtendedContact = {
       ...issuer,
       state: await this.getIpexState(issuer.id),
-      challenges: challenges.length > 0 ? (challenges.words as string[]) : [],
+      challenges:
+        challenges.length > 0 ? (challenges[0].words as string[]) : [],
     };
 
     return extendedIssuer;
