@@ -105,6 +105,8 @@ const acceptChallenge = async () => {
     }
 
     const repository = await Signifies.getInstance();
+    // TODO: oobi-ipexにYourChallengeReiverを作り、そこでハンドルする。
+    // setIpexStateは全てoobi-ipex.tsの中で行いたい。
     repository.setIpexState("2_1_challenge_received", id);
 
     const updatedContact: ExtendedContact = {

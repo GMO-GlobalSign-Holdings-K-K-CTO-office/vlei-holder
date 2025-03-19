@@ -4,6 +4,8 @@ import { IllegalStateException } from "@/modules/exception";
 import { AidName } from "./const";
 import { LogAllMethods } from "./decorator";
 
+// Important!: OOBIおよびIPEXのStateの設定は、このファイルで行うこと。
+
 export interface OobiIpexHandler {
   progress(client: SignifyClient, issuer: ExtendedContact): Promise<void>;
 }
