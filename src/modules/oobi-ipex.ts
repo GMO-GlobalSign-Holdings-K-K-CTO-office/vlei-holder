@@ -18,8 +18,7 @@ export class MyChallengeSentCallback implements OobiIpexHandler {
 @LogAllMethods
 export class YourResponseValidator implements OobiIpexHandler {
   async progress(client: SignifyClient, issuer: ExtendedContact) {
-    // TODO: Signifiesに移行する。
-    const challengeWord = sessionStorage.getItem(`challenge-${issuer.pre}`);
+    const challengeWord = Signifies.getChallengeWord(issuer);
     if (!challengeWord) {
       throw new Error("Challenge not found.");
     }
@@ -55,7 +54,7 @@ export class YourResponseValidator implements OobiIpexHandler {
       );
 
       const repository = await Signifies.getInstance();
-      await repository.setIpexState("2_3_response_validated", issuer.id);
+      await repository.setIpexState("3_3_response_validated", issuer.id);
     }
   }
 }
@@ -79,7 +78,7 @@ export class MyResponseSender implements OobiIpexHandler {
     // verifyが終わらないため、とりあえず次のステップに進む
     setTimeout(async () => {
       await repository.setIpexState("2_3_response_validated", issuer.id);
-    }, 30000);
+    }, 10000);
   }
 }
 
@@ -125,33 +124,3 @@ export type OobiIpexState =
   | "4_1_credential_received"
   | "4_2_credential_accepted"
   | "5_1_credential_revoked";
-
-// TODO: common.tsを作り移動する
-const formatStateMap: Map<OobiIpexState, string> = new Map();
-formatStateMap.set("1_init", "Init");
-formatStateMap.set("2_1_challenge_received", "Your Challenge Received / NONE");
-formatStateMap.set("2_2_response_sent", "My Response Sent / NONE");
-formatStateMap.set("2_3_response_validated", "My Response Validated / NONE");
-formatStateMap.set(
-  "3_1_challenge_sent",
-  "My Response Validated / My Challenge Sent",
-);
-formatStateMap.set(
-  "3_2_response_received",
-  "My Response Validated / Your Response Received",
-);
-formatStateMap.set(
-  "3_3_response_validated",
-  "My Response Validated / Your Response Validated",
-);
-formatStateMap.set("4_1_credential_received", "Credential Received");
-formatStateMap.set("4_2_credential_accepted", "Credential Accepted");
-formatStateMap.set("5_1_credential_revoked", "Credential Revoked");
-
-export const formatState = (state: OobiIpexState) => {
-  const formatted = formatStateMap.get(state);
-  if (!formatted) {
-    throw new IllegalStateException("State not found.");
-  }
-  return formatted;
-};

@@ -18,6 +18,7 @@ import {
   MyResponseSender,
   OobiIpexState,
   CredentialAccepter,
+  MyChallengeSentCallback,
 } from "@/modules/oobi-ipex";
 import {
   type KeriaRole,
@@ -96,6 +97,11 @@ export class Signifies {
             "3_2_response_received",
             new YourResponseValidator(),
           );
+          ipexHandlerMap.set(
+            "2_3_response_validated",
+            new MyChallengeSentCallback(),
+          );
+
           // ipex part
           ipexHandlerMap.set(
             "4_1_credential_received",
@@ -129,6 +135,14 @@ export class Signifies {
   static isInitiationDone = (): boolean => {
     return !!this.getMasterSecret();
   };
+
+  static setChallengeWord(contact: ExtendedContact, challengeWord: string) {
+    sessionStorage.setItem(`challenge-${contact.id}`, challengeWord);
+  }
+
+  static getChallengeWord(contact: ExtendedContact): string | null {
+    return sessionStorage.getItem(`challenge-${contact.id}`);
+  }
 
   /**
    * Generate a master secret.
@@ -477,7 +491,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const extendIssuer = async (issuer: Contact): Promise<ExtendedContact> => {
       let currentState = await this.getIpexState(issuer.id);
 
-      if (currentState === "2_3_response_validated") {
+      if (currentState === "3_1_challenge_sent") {
         // TODO: key存在の確認とType Guard実行
         const challengesInContact = issuer.challenges as any[];
         if (challengesInContact.length > 0) {

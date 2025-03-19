@@ -15,7 +15,7 @@
                 <td>{{ key }}</td>
                 <td>
                   <template v-if="key === 'state'">
-                    {{ formatState(value as OobiIpexState) }}
+                    {{ getStateLabel(value as OobiIpexState) }}
                   </template>
                   <template v-else>
                     {{ value }}
@@ -100,8 +100,10 @@
 import { onMounted, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
 import { Signifies, type ExtendedContact } from "@/modules/repository";
-import { formatState, type OobiIpexState } from "@/modules/oobi-ipex";
+import { type OobiIpexState } from "@/modules/oobi-ipex";
+import { getStateLabel } from "@/modules/view-common";
 import ChallengeAcceptanceDialog from "@/components/ChallengeAcceptanceDialog.vue";
+import { IllegalStateException } from "@/modules/exception";
 
 const renderReady = ref(false);
 const contact: Ref<ExtendedContact | null> = ref(null);
@@ -140,6 +142,11 @@ const challengeWord = ref("");
 const generateChallenge = async () => {
   const repository = await Signifies.getInstance();
   challengeWord.value = await repository.generateChallenge();
+
+  if (!contact.value) {
+    throw new IllegalStateException("Contact is not defined");
+  }
+  Signifies.setChallengeWord(contact.value, challengeWord.value);
   challengeGenSnackbar.value = true;
 };
 
