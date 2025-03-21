@@ -98,7 +98,7 @@ export class CredentialAccepter implements OobiIpexHandler {
     const admitArgs: IpexAdmitArgs = {
       senderName: holder.name,
       recipient: issuer.id,
-      message: "",
+      message: "I accepted the LE vLEI credential.",
       grantSaid: issuer.notification.a.d!,
       datetime: new Date().toISOString().replace("Z", "000+00:00"),
     };
@@ -108,10 +108,16 @@ export class CredentialAccepter implements OobiIpexHandler {
       .ipex()
       .submitAdmit(holder.name, admitSerder, sigs, aend, [issuer.id]);
 
-    await client.operations().wait(admitOperation);
-    await client.operations().delete(admitOperation.nadme);
+    const admitWaitOp = await client.operations().wait(admitOperation);
+    await client.operations().delete(admitOperation.name);
+    console.log(`Done Admit Wait Op: ${JSON.stringify(admitWaitOp, null, 2)}`);
+
     await client.notifications().mark(issuer.notification.i);
     await client.notifications().delete(issuer.notification.i);
+    console.log("Done Notification Mark and Delete for Credential Acceptance");
+
+    const repository = await Signifies.getInstance();
+    await repository.setIpexState("4_2_credential_accepted", issuer.id);
   }
 }
 

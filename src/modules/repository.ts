@@ -26,6 +26,7 @@ import {
   KERIA_ROLE,
   QVI_SCHEMA_URL,
   VLEI_REGISTRY_NAME,
+  QVI_SCHEMA_SAID,
 } from "@/modules/const";
 import { LogAllMethods } from "./decorator";
 
@@ -390,9 +391,11 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
       `Schema OOBI Resolution Result: ${JSON.stringify(resolveResult, null, 2)}`,
     );
 
-    // const resolveOp = await resolveResult.op();
-    // await this.client.operations().wait(resolveOp);
-    // await this.client.operations().delete(resolveOp.name);
+    console.log("Schemas:", await this.client.schemas().list());
+
+    const schemaOp = await this.client.operations().get(resolveResult.name);
+    await this.client.operations().wait(schemaOp);
+    await this.client.operations().delete(schemaOp.name);
   }
 
   /**
@@ -482,14 +485,19 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     const issuers = await this.client.contacts().list();
     console.log(`Issuers: ${JSON.stringify(issuers, null, 2)}`);
 
-    // TODO: Temporal code for Notification
+    // TODO: Temporal codes
     const notificationList = await this.client.notifications().list();
     console.log(
       `Notification List: ${JSON.stringify(notificationList, null, 2)}`,
     );
+    console.log("Schemas:", await this.client.schemas().list());
+    console.log(
+      `Schema: ${JSON.stringify(await this.client.schemas().get(QVI_SCHEMA_SAID), null, 2)}`,
+    );
 
     const extendIssuer = async (issuer: Contact): Promise<ExtendedContact> => {
       let currentState = await this.getIpexState(issuer.id);
+      let notification: Notification | undefined = undefined;
 
       if (currentState === "3_1_challenge_sent") {
         // TODO: key存在の確認とType Guard実行
@@ -498,6 +506,27 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
           currentState = "3_2_response_received";
           await this.setIpexState(currentState, issuer.id);
         }
+      } else if (currentState === "3_3_response_validated") {
+        const notifyResponse = (await this.client.notifications().list()) as {
+          notes: Notification[];
+        };
+
+        const noteList = notifyResponse.notes.filter(
+          (note) => note.a.r === "/exn/ipex/grant" && note.r === false,
+        );
+        console.log("fitlered noteList:", noteList);
+
+        if (noteList.length)
+          if (noteList.length >= 1) {
+            // TODO: 本当はここは=== 1にする。あとで直す
+            currentState = "4_1_credential_received";
+            await this.setIpexState(currentState, issuer.id);
+            notification = noteList[0];
+          } else {
+            throw new IllegalStateException(
+              `"The number of notification must be 1. number:",${noteList.length}`,
+            );
+          }
       }
 
       return {
@@ -505,6 +534,7 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
         state: currentState,
         // TODO: key存在の確認とType Guard実行
         challenges: issuer.challenges as string[],
+        notification,
       };
     };
 
