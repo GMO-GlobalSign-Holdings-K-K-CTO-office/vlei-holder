@@ -43,8 +43,8 @@ oobiIpexLabelMap.set("4_1_credential_received", {
 oobiIpexLabelMap.set("4_2_credential_accepted", {
   statelabel: "Credential Accepted (Valid)",
 });
-oobiIpexLabelMap.set("5_1_credential_revoked", {
-  statelabel: "Credential Revoked",
+oobiIpexLabelMap.set("5_1_credential_deleted", {
+  statelabel: "Credential Deleted",
 });
 
 /**

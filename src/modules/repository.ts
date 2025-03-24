@@ -6,7 +6,6 @@ import {
   CreateIdentiferArgs,
   HabState,
   Contact,
-  CredentialFilter,
 } from "signify-ts";
 import {
   IllegalArgumentException,
@@ -277,6 +276,20 @@ export interface SignifyRepository {
   setIpexState(state: OobiIpexState, holderAid: string): Promise<void>;
 
   /**
+   * Delete Credential.
+   *
+   * @param credentialId
+   */
+  deleteCredential(credentialId: string, issuerId: string): Promise<void>;
+
+  /**
+   * Get Issuer's Credential.
+   *
+   * @param issuerId
+   */
+  getIssuedCredentialId(issuerId: string): Promise<string>;
+
+  /**
    * This method is for development only.
    */
   inspect(): Promise<void>;
@@ -527,6 +540,24 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
               `"The number of notification must be 1. number:",${noteList.length}`,
             );
           }
+      } else if (currentState === "4_2_credential_accepted") {
+        // TODO: ここのコードは不要だが、デバッグ用に残しておく。あとで削除する。
+        // const credentials = await this.client.credentials().list({
+        //   filter: {
+        //     "-i": issuer.id,
+        //     "-s": QVI_SCHEMA_SAID,
+        //     "-a-i": await this.createOrRetrieveAid(),
+        //   },
+        // });
+        // console.log("Holding Credentials: ", credentials);
+        // Issuer側でのRevocationはKERI Message経由ではHolderに通知されない。
+        // OOBで通知をうけたあとに、Holder側で自前で削除する。
+        // if (Array.isArray(credentials) && credentials.length === 1) {
+        //   const credential = credentials[0];
+        //   if (credential.status.s === "1") {
+        //     this.setIpexState("5_1_credential_revoked", issuer.id);
+        //   }
+        // }
       }
 
       return {
@@ -638,37 +669,19 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
   /**
    * Get the Ipex State.
    *
-   * @param holderAid
+   * @param issuerAid
    * @returns Ipex State
    */
-  public async getIpexState(holderAid: string): Promise<OobiIpexState> {
+  public async getIpexState(issuerAid: string): Promise<OobiIpexState> {
     // TODO: ここの実装が1つキモになる。
     // とりあえず仮の実装として、localStorageを使うが、
     // App Backendから取得するのか、またはAgentから取得するのか
     // このままでいいのか、検討が必要。
-
     const state = localStorage.getItem(
-      `IpexState + ${holderAid}`,
+      `IpexState:${issuerAid}`,
     ) as OobiIpexState | null;
     if (!state) {
       throw new IllegalStateException("Ipex State is not set.");
-    }
-
-    // 参考コード
-    // https://github.com/WebOfTrust/signify-ts/blob/cddb00713ce7b09b3f18acdaae559703759369bc/examples/integration-scripts/credentials.test.ts#L251
-    if (state === "4_2_credential_accepted") {
-      const filter: CredentialFilter = {
-        filter: { "-i": holderAid },
-      };
-      const credentials = await this.client.credentials().list(filter);
-      console.log("Credentials: ", credentials);
-
-      if (Array.isArray(credentials) && credentials.length > 0) {
-        const credential = credentials[0];
-        if (credential.status.s === "1") {
-          return "5_1_credential_revoked";
-        }
-      }
     }
 
     return state;
@@ -678,18 +691,18 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
    * Set the Ipex State.
    *
    * @param state
-   * @param holderAid
+   * @param issuerAid
    */
   public async setIpexState(
     state: OobiIpexState,
-    holderAid: string,
+    issuerAid: string,
   ): Promise<void> {
     // TODO: ここの実装が1つキモになる。
     // とりあえず仮の実装として、localStorageを使うが、
     // App Backendから取得するのか、またはAgentから取得するのか
     // このままでいいのか、検討が必要。
 
-    localStorage.setItem(`IpexState + ${holderAid}`, state);
+    localStorage.setItem(`IpexState:${issuerAid}`, state);
   }
 
   /**
@@ -702,6 +715,48 @@ class SignifyRepositoryDefaultImpl implements SignifyRepository {
     console.log(`Challenge: ${JSON.stringify(challenge, null, 2)}`);
     // TODO: 仮の実装。実際のSDK戻り値を確認して修正する。
     return challenge.words.toString();
+  }
+
+  /**
+   * Delete Credential.
+   *
+   * @param credentialId
+   */
+  public async deleteCredential(
+    credentialId: string,
+    issuerId: string,
+  ): Promise<void> {
+    await this.client.credentials().delete(credentialId);
+    this.setIpexState("5_1_credential_deleted", issuerId);
+  }
+
+  /**
+   * Get Issuer's Credential.
+   *
+   * @param issuerId
+   */
+  public async getIssuedCredentialId(issuerId: string): Promise<string> {
+    try {
+      const credentials = await this.client.credentials().list({
+        filter: {
+          "-i": issuerId,
+          "-s": QVI_SCHEMA_SAID,
+          "-a-i": await this.createOrRetrieveAid(),
+        },
+      });
+      console.log("Holding Credentials: ", credentials);
+
+      if (Array.isArray(credentials) && credentials.length === 1) {
+        // 運用の前提として1つのIssuerに対し、Credentialは1つ。
+        return credentials[0].sad.d;
+      } else {
+        throw new IllegalStateException(
+          `The number of credential must be 1. number:${credentials.length}`,
+        );
+      }
+    } catch (e) {
+      throw new IllegalStateException("Credential not found.");
+    }
   }
 
   /**

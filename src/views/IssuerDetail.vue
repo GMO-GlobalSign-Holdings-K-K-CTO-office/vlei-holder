@@ -27,6 +27,24 @@
         </v-table>
       </v-row>
 
+      <!-- Credential Deletion Part -->
+      <template v-if="contact.state === '4_2_credential_accepted'">
+        <credential-deletion-dialog
+          @credentialDeleted="credentialDeleted"
+          :credentialId="issuedCredentialId"
+          :issuerId="contact.id"
+        />
+      </template>
+      <v-snackbar
+        v-model="credentialDeletedSnackbar"
+        close-on-content-click
+        color="accent"
+        timeout="2000"
+        variant="tonal"
+      >
+        <div class="d-flex justify-center">Credential Deleted</div>
+      </v-snackbar>
+
       <!-- Challenge Acceptance Part -->
       <challenge-acceptance-dialog
         :contact="contact"
@@ -103,22 +121,34 @@ import { Signifies, type ExtendedContact } from "@/modules/repository";
 import { type OobiIpexState } from "@/modules/oobi-ipex";
 import { getStateLabel } from "@/modules/view-common";
 import ChallengeAcceptanceDialog from "@/components/ChallengeAcceptanceDialog.vue";
+import CredentialDeletionDialog from "@/components/CredentialDeletionDialog.vue";
 import { IllegalStateException } from "@/modules/exception";
 
 const renderReady = ref(false);
 const contact: Ref<ExtendedContact | null> = ref(null);
+const issuedCredentialId: Ref<string | null> = ref(null);
 
 const route = useRoute();
-
 const showDetail = async () => {
   const aid = route.params.aid;
 
   if (Array.isArray(aid)) {
-    throw new Error("Invalid AID");
-  } else {
-    const repository = await Signifies.getInstance();
-    contact.value = await repository.getIssuer(aid);
-    console.log(`Issuer: ${JSON.stringify(contact.value, null, 2)}`);
+    throw new IllegalArgumentException("Invalid AID");
+  }
+
+  const repository = await Signifies.getInstance();
+  contact.value = await repository.getIssuer(aid);
+  console.log(`Issuer: ${JSON.stringify(contact.value, null, 2)}`);
+
+  if (contact.value.state === "4_2_credential_accepted") {
+    const credentialId = await repository.getIssuedCredentialId(
+      contact.value.id,
+    );
+    if (credentialId && contact.value.state === "4_2_credential_accepted") {
+      issuedCredentialId.value = credentialId;
+    } else {
+      throw new IllegalStateException("Credential ID not found");
+    }
   }
 
   // for debugging purpose only
@@ -153,6 +183,15 @@ const generateChallenge = async () => {
 const copyChallengeText = () => {
   navigator.clipboard.writeText(challengeWord.value);
   challengeCopiedSnackbar.value = true;
+};
+
+// Credential Deletion Part
+const credentialDeletedSnackbar = ref(false);
+const credentialDeleted = async () => {
+  renderReady.value = false;
+  await showDetail();
+  renderReady.value = true;
+  credentialDeletedSnackbar.value = true;
 };
 
 const emit = defineEmits<{

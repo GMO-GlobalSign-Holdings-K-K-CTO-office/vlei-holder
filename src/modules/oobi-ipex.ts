@@ -131,4 +131,4 @@ export type OobiIpexState =
   | "3_3_response_validated" // レスポンス検証済み
   | "4_1_credential_received"
   | "4_2_credential_accepted"
-  | "5_1_credential_revoked";
+  | "5_1_credential_deleted";
