@@ -28,7 +28,13 @@
       </v-row>
 
       <!-- Credential Deletion Part -->
-      <template v-if="contact.state === '4_2_credential_accepted'">
+      <template
+        v-if="
+          issuedCredentialId &&
+          contact &&
+          contact.state === '4_2_credential_accepted'
+        "
+      >
         <credential-deletion-dialog
           @credentialDeleted="credentialDeleted"
           :credentialId="issuedCredentialId"
@@ -122,7 +128,10 @@ import { type OobiIpexState } from "@/modules/oobi-ipex";
 import { getStateLabel } from "@/modules/view-common";
 import ChallengeAcceptanceDialog from "@/components/ChallengeAcceptanceDialog.vue";
 import CredentialDeletionDialog from "@/components/CredentialDeletionDialog.vue";
-import { IllegalStateException } from "@/modules/exception";
+import {
+  IllegalStateException,
+  IllegalArgumentException,
+} from "@/modules/exception";
 
 const renderReady = ref(false);
 const contact: Ref<ExtendedContact | null> = ref(null);
@@ -144,15 +153,12 @@ const showDetail = async () => {
     const credentialId = await repository.getIssuedCredentialId(
       contact.value.id,
     );
-    if (credentialId && contact.value.state === "4_2_credential_accepted") {
+    if (credentialId) {
       issuedCredentialId.value = credentialId;
     } else {
       throw new IllegalStateException("Credential ID not found");
     }
   }
-
-  // for debugging purpose only
-  // await repository.inspect();
 };
 
 // Challenge Acceptance Part
