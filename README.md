@@ -11,16 +11,12 @@ The screen transitions start from `Init.vue`. For routing details, please refer 
 To run this, a KERIA Agent and a Witness are required.
 Please follow the steps below.
 
-## Running Locally
+## Running
 1. Install Node.js
 2. Clone the repo and switch to the latest tag.
 3. Set up the KERIA Agent, Witness, and vLEI Server by following the setup instructions in the corresponding [repository](https://github.com/GMO-GlobalSign-Holdings-K-K-CTO-office/keria-witness-vlei_schema).
-4. Make sure the URLs in the `.env` file of this repo match the configurations set in step 2.
+4. Make sure each Witness AID in `VITE_WITNESS_URLS` of the `.env` file matches the corresponding AID in the `iurls` field of `config/keria.json` from the repository in step 2.
 5. Run `yarn dev`
 
 ## Miscellaneous
-Please add the following command in .husky/pre-commit if you want to enable huskey.
-
-```bash
-yarn run pre-commit
-```
+Please add `yarn run pre-commit` in .husky/pre-commit if you want to enable huskey.
